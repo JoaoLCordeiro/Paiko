@@ -148,23 +148,24 @@ void print_vector (WINDOW *win,int *white,int *black,char **tiles)
 	wrefresh(win);							
 }
 
-void buy_tiles (int *hand,int *reserve)
+int buy_tiles (int *hand,int *reserve)
 {
-	int i = 0;
-	int k;
-	while (i<3)
+	int t1,t2,t3;
+	scanw("%d %d %d",&t1,&t2,&t3);
+	if (t1 && t2 && t3)	/*testing if one or more isn't zero*/
 	{
-		scanw("%d",&k);
-		if ((k >= 0)&&(k < 8))
+		if ( ((t1 > 0)&&(t1 < 9)) && ((t2 > 0)&&(t2 < 9)) && ((t3 > 0)&&(t3 < 9)) )
 		{
-			if (reserve[k] != 0)
-			{
-				reserve[k]--;
-				hand[k]++;
-				i++;
-			}
+			reserve[t1]--;
+			reserve[t2]--;
+			reserve[t3]--;
+			hand[t1]++;
+			hand[t2]++;
+			hand[t3]++;
+			return 1;
 		}
 	}
+	return 0;
 }
 
 int main ()
@@ -224,13 +225,21 @@ int main ()
 		char k = getch();
 		if (k == 'b') 	/*makes buy tiles*/
 		{
-			mvwprintw(wboard, 40 , 2 , "Escreva o numero da");
-			mvwprintw(wboard, 41 , 2 , "peça e aperte ENTER");
+			mvwprintw(wboard, 39 , 2 , "Write the numbers of");
+			mvwprintw(wboard, 40 , 2 , "the tiles with spaces");
+			mvwprintw(wboard, 41 , 2 , "between them and press ENTER.");
+			mvwprintw(wboard, 42 , 2 , "Write 0 to cancel.");
 			wrefresh(wboard);
 			if (! player)
-				buy_tiles (hv_white,rv_white);
+			{
+				if ( buy_tiles (hv_white,rv_white) )
+					player = (player + 1)%2;
+			}
 			else
-				buy_tiles (hv_black,rv_black);
+			{
+				if ( buy_tiles (hv_black,rv_black) )
+					player = (player + 1)%2;
+			}
 		}
 		else if (k == 'm')
 		{
@@ -242,7 +251,6 @@ int main ()
 		}
 		else if (k == 'q')
 			finish = 1;
-		player = (player+1)%2;
 	}	
 	endwin();
 	return 1;
