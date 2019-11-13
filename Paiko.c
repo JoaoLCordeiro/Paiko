@@ -1,5 +1,5 @@
 /*************************************************************************/
-/* 		Paiko em C ^-^ by João Lucas Cordeiro  			 */
+/* 		        Paiko in C ^-^ by João Lucas Cordeiro         			 */
 /*************************************************************************/
 
 #include <stdlib.h>
@@ -371,22 +371,38 @@ void print_buy_msg (WINDOW *win)
     wrefresh(win);
 }
 
+int verify_tile_dies_black (t_square *square)
+{
+    if (((square->tile / 4 == BFIRE/4) && (((square->cv_black == 1)&&(square->th_white + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_white >= 1)))) ||	/*if it's a black fire and it dies*/((square->tile >= 36)&&(square->tile < 68)&&(square->tile < BFIRE)&&(square->tile >= BFIRE + 4)  && (((square->cv_black == 1)&&(square->th_white + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_white >= 2))))) /*its other black tile and it dies*/
+        return 1;
+    else
+        return 0; 
+}
+
+int verify_tile_dies_white (t_square *square)
+{
+    if (((square->tile / 4 == WFIRE/4) && (((square->cv_white == 1)&&(square->th_black + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_black >= 1)))) ||	/*if it's a white fire and it dies*/((square->tile >= 4)&&(square->tile < 36)&&(square->tile < WFIRE)&&(square->tile >= WFIRE + 4) && (((square->cv_white == 1)&&(square->th_black + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_black >= 2))))) /*its other white tile and it dies*/
+        return 1;
+    else
+        return 0;
+}
+
 int verify_fire (t_board *board,int lin,int col,int dir,int player)
 {
     int i,j;
-    t_square *square;
+    t_square *square;   /*BLACK TILES VERIFICATION PART*/
     if (! player)
     {
         if (dir == 1)
         {
-            for (i=-2 ; i<0 ; i++)                                                                                                                                                                                                                                                                                                                                                                                      
+            for (i=-2 ; i<0 ; i++)
             {
                 if (i == -2)
                 {
                     for (j=-2 ; j<3 ; j++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == BFIRE/4) && (((square->cv_white == 1)&&(square->th_white + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_white >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 36)&&(square->tile < 68) && (((square->cv_white == 1)&&(square->th_white + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_white >= 2)))))	/*if its a white piece and it dies*/
+                        if ( verify_tile_dies_black (square) )
                             return 0;
                     }
                 }
@@ -395,7 +411,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (j=-1 ; j<2 ; j++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == BFIRE/4) && (((square->cv_white == 1)&&(square->th_white + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_white >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 36)&&(square->tile < 68) && (((square->cv_white == 1)&&(square->th_white + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_white >= 2)))))	/*if its a white piece and it dies*/
+                        if ( verify_tile_dies_black (square) )
                             return 0;
                     }
                 }
@@ -411,7 +427,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (i=-2 ; i<3 ; i++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == BFIRE/4) && (((square->cv_white == 1)&&(square->th_white + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_white >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 36)&&(square->tile < 68) && (((square->cv_white == 1)&&(square->th_white + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_white >= 2)))))	/*if its a white piece and it dies*/
+                        if ( verify_tile_dies_black (square) )
                             return 0;
                     }
                 }
@@ -420,7 +436,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (i=-1 ; i<2 ; i++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == BFIRE/4) && (((square->cv_white == 1)&&(square->th_white + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_white >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 36)&&(square->tile < 68) && (((square->cv_white == 1)&&(square->th_white + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_white >= 2)))))	/*if its a white piece and it dies*/
+                        if ( verify_tile_dies_black (square) )
                             return 0;
                     }
                 }
@@ -436,7 +452,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (i=-2 ; i<3 ; i++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == BFIRE/4) && (((square->cv_white == 1)&&(square->th_white + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_white >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 36)&&(square->tile < 68) && (((square->cv_white == 1)&&(square->th_white + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_white >= 2)))))	/*if its a white piece and it dies*/
+                        if ( verify_tile_dies_black (square) )
                             return 0;
                     }
                 }
@@ -445,7 +461,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (i=-1 ; i<2 ; i++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == BFIRE/4) && (((square->cv_white == 1)&&(square->th_white + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_white >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 36)&&(square->tile < 68) && (((square->cv_white == 1)&&(square->th_white + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_white >= 2)))))	/*if its a white piece and it dies*/
+                        if ( verify_tile_dies_black (square) )
                             return 0;
                     }
                 }
@@ -461,7 +477,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (j=-2 ; j<3 ; j++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == BFIRE/4) && (((square->cv_white == 1)&&(square->th_white + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_white >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 36)&&(square->tile < 68) && (((square->cv_white == 1)&&(square->th_white + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_white >= 2)))))	/*if its a white piece and it dies*/
+                        if ( verify_tile_dies_black (square) )
                             return 0;
                     }
                 }
@@ -470,7 +486,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (j=-1 ; j<2 ; j++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == BFIRE/4) && (((square->cv_white == 1)&&(square->th_white + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_white >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 36)&&(square->tile < 68) && (((square->cv_white == 1)&&(square->th_white + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_white >= 2)))))	/*if its a white piece and it dies*/
+                        if ( verify_tile_dies_black (square) )
                             return 0;
                     }
                 }
@@ -478,18 +494,18 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
             return 1;
         }
     }
-    else                /*BLACK TILES VERIFICATION PART*/
+    else                /*WHITE TILES VERIFICATION PART*/
     {
         if (dir == 1)
         {
-           for (i=-2 ; i<0 ; i++)                                                                                                                                                                                                                                                                                                                                                                                     
+           for (i=-2 ; i<0 ; i++) 
            {
                if (i == -2)
                {
                    for (j=-2 ; j<3 ; j++)
                    {
                        square = board->m[lin+i][col+j];
-                       if (((square->tile / 4 == WFIRE/4) && (((square->cv_black == 1)&&(square->th_black + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_black >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 4)&&(square->tile < 36) && (((square->cv_black == 1)&&(square->th_black + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_black >= 2)))))	/*if its a black piece and it dies*/
+                       if ( verify_tile_dies_white (square) )
                            return 0;
                    }
                }
@@ -498,7 +514,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                    for (j=-1 ; j<2 ; j++)
                    {
                        square = board->m[lin+i][col+j];
-                       if (((square->tile / 4 == WFIRE/4) && (((square->cv_black == 1)&&(square->th_black + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_black >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 4)&&(square->tile < 36) && (((square->cv_black == 1)&&(square->th_black + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_black >= 2)))))	/*if its a black piece and it dies*/
+                       if ( verify_tile_dies_white (square) )
                            return 0;
                    }
                }
@@ -514,7 +530,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (i=-2 ; i<3 ; i++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == WFIRE/4) && (((square->cv_black == 1)&&(square->th_black + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_black >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 4)&&(square->tile < 36) && (((square->cv_black == 1)&&(square->th_black + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_black >= 2)))))	/*if its a black piece and it dies*/
+                        if ( verify_tile_dies_white (square) )
                             return 0;
                     }
                 }
@@ -523,7 +539,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (i=-1 ; i<2 ; i++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == WFIRE/4) && (((square->cv_black == 1)&&(square->th_black + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_black >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 4)&&(square->tile < 36) && (((square->cv_black == 1)&&(square->th_black + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_black >= 2)))))	/*if its a black piece and it dies*/
+                        if ( verify_tile_dies_white (square) )
                             return 0;
                     }
                 }
@@ -539,7 +555,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (i=-2 ; i<3 ; i++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == WFIRE/4) && (((square->cv_black == 1)&&(square->th_black + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_black >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 4)&&(square->tile < 36) && (((square->cv_black == 1)&&(square->th_black + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_black >= 2)))))	/*if its a black piece and it dies*/
+                        if ( verify_tile_dies_white (square) )
                             return 0;
                     }
                 }
@@ -548,7 +564,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (i=-1 ; i<2 ; i++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == WFIRE/4) && (((square->cv_black == 1)&&(square->th_black + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_black >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 4)&&(square->tile < 36) && (((square->cv_black == 1)&&(square->th_black + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_black >= 2)))))	/*if its a black piece and it dies*/
+                        if ( verify_tile_dies_white (square) )
                             return 0;
                     }
                 }
@@ -564,7 +580,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (j=-2 ; j<3 ; j++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == WFIRE/4) && (((square->cv_black == 1)&&(square->th_black + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_black >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 4)&&(square->tile < 36) && (((square->cv_black == 1)&&(square->th_black + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_black >= 2)))))	/*if its a black piece and it dies*/
+                        if ( verify_tile_dies_white (square) )
                             return 0;
                     }
                 }
@@ -573,7 +589,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
                     for (j=-1 ; j<2 ; j++)
                     {
                         square = board->m[lin+i][col+j];
-                        if (((square->tile / 4 == WFIRE/4) && (((square->cv_black == 1)&&(square->th_black + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_black >= 1)))) ||	/*if it's a fire and it dies*/((square->tile >= 4)&&(square->tile < 36) && (((square->cv_black == 1)&&(square->th_black + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_black >= 2)))))	/*if its a black piece and it dies*/
+                        if ( verify_tile_dies_white (square) )
                             return 0;
                     }
                 }
@@ -679,14 +695,14 @@ void fire_threatens (t_board *board,int lin,int col,int dir,int player)
                     {
                         for (j=-2 ; j<3 ; j++)
                         {
-                            board->m[lin+i][col+j]->th_white++;
+                            board->m[lin+i][col+j]->th_black++;
                         }
                     }
                     else
                     {
                         for (j=-1 ; j<2 ; j++)
                         {
-                            board->m[lin+i][col+j]->th_white++;
+                            board->m[lin+i][col+j]->th_black++;
                         }
                     }
                 }
@@ -699,14 +715,14 @@ void fire_threatens (t_board *board,int lin,int col,int dir,int player)
                     {
                         for (i=-2 ; i<3 ; i++)
                         {
-                             board->m[lin+i][col+j]->th_white++;  
+                             board->m[lin+i][col+j]->th_black++;  
                         }
                     }
                     else
                     {
                         for (i=-1 ; i<2 ; i++)
                         {
-                            board->m[lin+i][col+j]->th_white++;
+                            board->m[lin+i][col+j]->th_black++;
                         }
                     }
                 }
@@ -719,14 +735,14 @@ void fire_threatens (t_board *board,int lin,int col,int dir,int player)
                     {
                         for (i=-2 ; i<3 ; i++)
                         {
-                            board->m[lin+i][col+j]->th_white++;
+                            board->m[lin+i][col+j]->th_black++;
                         }
                     }
                     else
                     {
                         for (i=-1 ; i<2 ; i++)
                         {
-                            board->m[lin+i][col+j]->th_white++;
+                            board->m[lin+i][col+j]->th_black++;
                         }
                     }
                 }
@@ -739,14 +755,14 @@ void fire_threatens (t_board *board,int lin,int col,int dir,int player)
                     {
                         for (j=-2 ; j<3 ; j++)
                         {
-                            board->m[lin+i][col+j]->th_white++;
+                            board->m[lin+i][col+j]->th_black++;
                         }
                     }
                     else
                     {
                         for (j=-1 ; j<2 ; j++)
                         {
-                            board->m[lin+i][col+j]->th_white++;
+                            board->m[lin+i][col+j]->th_black++;
                         }
                     }
                 }
@@ -1099,13 +1115,15 @@ int deploy_tile (t_board *board,int player,int *hand)
             return 0;
         else if (! ((lin < 14)&&(lin >= 0) && (col < 14)&&(col >= 0) && (col+lin >= 6)&&(col+lin <= 20) && (col-lin <= 7)&&(col-lin >= -7)) )	/*tests if it's on the board*/
             return 0;
+        else if (! (((player)&&((board->m[lin][col]->th_black >= 1)||((lin < 7)&&(col > 6)))) || ((! player)&&((board->m[lin][col]->th_white >= 1)||((lin > 6)&&(col < 7)))))) /*tests if the square has friendly threat or it's on the base*/
+            return 0;
         else
         {
             if (tile == 5)	/*if the player wants to deploy a lotus*/
             {
-                if ((board->m[lin][col]->tile == EMPTY) || (board->m[lin][col]->tile == BLACKSQR))
+                if ((board->m[lin][col]->tile == EMPTY) || (board->m[lin][col]->tile == BLACKSQR))  /*lotus can be deployed on the black squares*/
                 {
-                    if (((player)&&(board->m[lin][col]->th_white >= 3)) || ((! player)&&(board->m[lin][col]->th_black >= 3)))
+                    if ( test_thread (board,lin,col,player))   /*testes if the square has threat*/
                         return 0;
                     else
                     {
@@ -1132,7 +1150,7 @@ int deploy_tile (t_board *board,int player,int *hand)
             {
                 if (board->m[lin][col]->tile == EMPTY)
                 {
-                    if ( test_thread (board,lin,col,player) )  /*test if the fire dies in the square*/
+                    if ( test_thread (board,lin,col,player) )  /*test if the square has threat*/
                         return 0;
                     else
                     {
@@ -1160,7 +1178,7 @@ int deploy_tile (t_board *board,int player,int *hand)
             {
                 if (board->m[lin][col]->tile == EMPTY)
                 {
-                    if ( test_thread (board,lin,col,player) )  /*testes if the tiles dies in the square*/
+                    if ( test_thread (board,lin,col,player) )  /*testes if the square has threat*/
                         return 0;
                     else
                     {
@@ -1170,7 +1188,7 @@ int deploy_tile (t_board *board,int player,int *hand)
                             scanw("%d", &dir);
                             if (!dir)
                                 return 0;
-                            else if (! ((dir < 0)&&(dir < 5)) )
+                            else if (! ((dir > 0)&&(dir < 5)) )
                                 return 0;
                             else
                             {
@@ -1263,12 +1281,17 @@ void print_debug (WINDOW *wdebug1,WINDOW *wdebug2,t_board *board)
 
 void print_deploy_msg (WINDOW *wboard)
 {
-    mvwprintw (wboard, 37 , 2 , "Write the number of");
-    mvwprintw (wboard, 38 , 2 , "the tile that you want");         
-    mvwprintw (wboard, 39 , 2 , "to deploy, the position");
-    mvwprintw (wboard, 40 , 2 , "on the board and, if the tile");
-    mvwprintw (wboard, 41 , 2 , "can rotate, his rotation.");
-    mvwprintw (wboard, 42 , 2 , "Type 0 to cancel the action.");
+    mvwprintw (wboard, 37 , 2  , "Write the number of");
+    mvwprintw (wboard, 38 , 2  , "the tile that you want");         
+    mvwprintw (wboard, 39 , 2  , "to deploy, the position");
+    mvwprintw (wboard, 40 , 2  , "on the board and, if the tile");
+    mvwprintw (wboard, 41 , 2  , "can rotate, his rotation.");
+    mvwprintw (wboard, 42 , 2  , "Type 0 to cancel the action.");
+    mvwprintw (wboard, 37 , 47 , "For the directions:");            
+    mvwprintw (wboard, 38 , 47 , "1 - Up");       
+    mvwprintw (wboard, 39 , 47 , "2 - Left");
+    mvwprintw (wboard, 40 , 47 , "3 - Right");
+    mvwprintw (wboard, 41 , 47 , "4 - Down");
     wrefresh  (wboard);
 }
 
