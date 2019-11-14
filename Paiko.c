@@ -373,7 +373,7 @@ void print_buy_msg (WINDOW *win)
 
 int verify_tile_dies_black (t_square *square)
 {
-    if (((square->tile / 4 == BFIRE/4) && (((square->cv_black == 1)&&(square->th_white + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_white >= 1)))) ||	/*if it's a black fire and it dies*/((square->tile >= 36)&&(square->tile < 68)&&(square->tile < BFIRE)&&(square->tile >= BFIRE + 4)  && (((square->cv_black == 1)&&(square->th_white + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_white >= 2))))) /*its other black tile and it dies*/
+    if (((square->tile / 4 == BFIRE/4) && (((square->cv_black >= 1)&&(square->th_white + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_white >= 1)))) ||	/*if it's a black fire and it dies*/((square->tile >= 36)&&(square->tile < 68)&&(square->tile < BFIRE)&&(square->tile >= BFIRE + 4)  && (((square->cv_black >= 1)&&(square->th_white + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_white >= 2))))) /*its other black tile and it dies*/
         return 1;
     else
         return 0; 
@@ -381,7 +381,7 @@ int verify_tile_dies_black (t_square *square)
 
 int verify_tile_dies_white (t_square *square)
 {
-    if (((square->tile / 4 == WFIRE/4) && (((square->cv_white == 1)&&(square->th_black + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_black >= 1)))) ||	/*if it's a white fire and it dies*/((square->tile >= 4)&&(square->tile < 36)&&(square->tile < WFIRE)&&(square->tile >= WFIRE + 4) && (((square->cv_white == 1)&&(square->th_black + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_black >= 2))))) /*its other white tile and it dies*/
+    if (((square->tile / 4 == WFIRE/4) && (((square->cv_white >= 1)&&(square->th_black + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_black >= 1)))) ||	/*if it's a white fire and it dies*/((square->tile >= 4)&&(square->tile < 36)&&(square->tile < WFIRE)&&(square->tile >= WFIRE + 4) && (((square->cv_white >= 1)&&(square->th_black + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_black >= 2))))) /*its other white tile and it dies*/
         return 1;
     else
         return 0;
@@ -1134,9 +1134,9 @@ int deploy_tile (t_board *board,int player,int *hand)
                             for (j=-1 ; j<2 ; j++)
                             {
                                 if (player)
-                                    board->m[lin+i][col+j]->cv_white = 1;
+                                    board->m[lin+i][col+j]->cv_white++;
                                 else
-                                    board->m[lin+1][col+j]->cv_black = 1;
+                                    board->m[lin+1][col+j]->cv_black++;
                             }
                         }
                         hand[tile-1]--;
@@ -1293,6 +1293,152 @@ void print_deploy_msg (WINDOW *wboard)
     mvwprintw (wboard, 40 , 47 , "3 - Right");
     mvwprintw (wboard, 41 , 47 , "4 - Down");
     wrefresh  (wboard);
+}
+
+int verify_tile_dies (t_board *board,int tile,int lin,int col,int player)
+{
+    if (! player)
+    {
+        if (tile/4 == WFIRE/4)
+        {
+            if (((board->m[lin][col]->th_black >= 1)&&(board->m[lin][col]->cv_white == 0)) || ((board->m[lin][col]->th_black >= 2)&&(board->m[lin][col]->cv_white >= 1)))
+                return 1;
+        }
+        else
+        {
+            if (((board->m[lin][col]->th_black >= 2)&&(board->m[lin][col]->cv_white == 0)) || ((board->m[lin][col]->th_black >= 3)&&(board->m[lin][col]->cv_white >= 1)))
+                return 1;
+        }
+    }
+    else
+    {
+        if (tile/4 == BFIRE/4)
+        {
+            if (((board->m[lin][col]->th_white >= 1)&&(board->m[lin][col]->cv_black == 0)) || ((board->m[lin][col]->th_white >= 2)&&(board->m[lin][col]->cv_black >= 1)))
+                return 1;
+        }
+        else
+        {
+            if (((board->m[lin][col]->th_white >= 2)&&(board->m[lin][col]->cv_black == 0)) || ((board->m[lin][col]->th_white >= 3)&&(board->m[lin][col]->cv_black >= 1)))
+                return 1;
+        }
+    }
+    return 0;
+}
+
+int verify_square_region (int tile,int olin,int ocol,int dlin,int dcol)
+{
+    if ((tile/4 == WEARTH/4) || (tile/4 == BEARTH/4))
+    {
+        if (((dlin+1 == olin)&&(dcol == ocol)) || ((dlin-1 == olin)&&(dcol == ocol)) || ((dlin == olin)&&(dcol-1 == ocol)) || ((dlin == olin)&&(dcol+1 == ocol)))
+            return 1;
+    }
+    else
+    {
+        if (((dlin+2 == olin)&&(dcol == ocol)) || ((dlin+1 == olin)&&(dcol <= ocol+1)&&(dcol >= ocol-1)) || ((dlin == olin)&&(dcol <= ocol+2)&&(dcol >= ocol-2)) || ((dlin-1 == olin)&&(dcol <= ocol+1)&&(dcol >= ocol-1)) || ((dlin-2 == olin)&&(dcol == ocol)))
+            return 1;
+    }
+    return 0;
+}
+
+int verify_way_to_square (t_board *board,int olin,int ocol,int dlin,int dcol)
+{
+    if (((dlin == olin)&&((dcol+2 == ocol) || (dcol-2 == ocol))) || (((dlin+2 == olin) || (dlin-2 == olin))&&(dcol == ocol))) /*if its the point of the area*/
+    {
+        if ((dlin == olin)&&(dcol+2 == ocol))   /*left*/
+        {
+            if (board->m[olin][ocol-1]->tile == 0)
+                return 1;
+        }
+        else if ((dlin == olin)&&(dcol-2 == ocol)) /*right*/
+        {
+            if (board->m[olin][ocol+1]->tile == 0)
+                return 1;
+        }
+        else if ((dlin+2 == olin)&&(dcol == ocol)) /*up*/
+        {
+            if (board->m[olin-1][ocol]->tile == 0)
+                return 1;
+        }
+        else /*down*/
+        {
+            if (board->m[olin+1][ocol]->tile == 0)
+                return 1;
+        }
+    }
+    else if (((dlin+1 == olin)&&((dcol+1 == ocol) || (dcol-1 == ocol))) || ((dlin-1 == olin)&&((dcol+1 == ocol) || (dcol-1 == ocol)))) /*if its the diagonals of the area*/
+    {
+        if ((dlin+1 == olin)&&(dcol+1 == ocol)) /*upper-left*/
+        {
+            if ((board->m[olin-1][ocol]->tile == 0)||(board->m[olin][ocol-1]->tile == 0))
+                return 1;
+        }
+        else if ((dlin+1 == olin)&&(dcol-1 == ocol))    /*upper-right*/
+        {
+            if ((board->m[olin-1][ocol]->tile == 0)||(board->m[olin][ocol+1]->tile == 0))
+                return 1;
+        }
+        else if ((dlin-1 == olin)&&(dcol+1 == ocol))    /*lower-left*/
+        {
+            if ((board->m[olin+1][ocol]->tile == 0)||(board->m[olin][ocol-1]->tile == 0))
+                return 1;
+        }
+        else    /*lower-right*/
+        {
+            if ((board->m[olin+1][ocol]->tile == 0)||(board->m[olin][ocol+1]->tile == 0))
+                return 1;
+        }
+    }
+    else /*if its the next sides of the area*/
+    {
+        return 1;
+    }
+    return 0;
+}
+
+int move_tile   (t_board *board,int player)
+{
+    int olin,ocol;  /*origin line and column*/
+    scanw("%d %d", &olin, &ocol);	/*picks the coordinate of the tile that the player wants to move*/
+    olin--;
+    ocol--;
+    if (! ((olin == -1)&&(ocol == -1))) /*press zero to cancel the move*/
+        return 0;
+    else if ( (board->m[olin][ocol]->tile / 4 == WAIR/4) || (board->m[olin][ocol]->tile / 4 == BAIR/4) || (board->m[olin][ocol]->tile / 4 == WLOTUS/4) || (board->m[olin][ocol]->tile / 4 == BLOTUS/4) ) /*if cannot move*/
+        return 0;
+    else if (! ((olin < 14)&&(olin >= 0) && (ocol < 14)&&(ocol >= 0) && (ocol+olin >= 6)&&(ocol+olin <= 20) && (ocol-olin <= 7)&&(ocol-olin >= -7)) )	/*tests if it's on the board*/
+        return 0;
+    else if (! ((! player) && (board->m[olin][ocol]->tile > 0) && (board->m[olin][ocol]->tile < 36)) || ((player) && (board->m[olin][ocol]->tile > 35) && (board->m[olin][ocol]->tile < 68)) ) /*tests if it's a friendly tile*/
+        return 0;
+    else
+    {
+        int dlin,dcol;
+        scanw("%d %d", &dlin, &dcol);
+        dlin--;
+        dcol--;
+        if (! ((dlin == -1)&&(dcol == -1))) /*press zero to cancel the move*/
+            return 0;
+        else if (! ((dlin < 14)&&(dlin >= 0) && (dcol < 14)&&(dcol >= 0) && (dcol+dlin >= 6)&&(dcol+dlin <= 20) && (dcol-dlin <= 7)&&(dcol-dlin >= -7)) )	/*tests if it's on the board*/
+            return 0;
+        else if (! (board->m[dlin][dcol]->tile == 0))   /*if the square is occupied*/
+            return 0;
+        else if (! verify_square_region (board->m[olin][ocol]->tile,olin,ocol,dlin,dcol) )  /*verify if the destiny square it's on the region of the origin square*/
+            return 0;
+        else if ( verify_tile_dies (board,board->m[olin][ocol]->tile,dlin,dcol,player)) /*verify if the tile dies when it moves to the destiny*/
+            return 0;
+        else if (! verify_way_to_square (board,olin,ocol,dlin,dcol) )    /*verify if the tile has a way to move to the destiny square*/
+            return 0;
+        else
+        {
+            int tile = board->m[olin][ocol]->tile;
+            if ((tile/4 == WFIRE/4) || (tile/4 == BFIRE/4) || (tile/4 == WBOW/4) || (tile/4 == BBOW/4) || (tile/4 == WSAI/4) || (tile/4 == BSAI/4)) /*if the tile can rotates*/
+            {
+            }   /*falta tirar o threat e colocar de volta para as peças comuns, girar se pode girar e verificar se mata peças amigas no caso do fogo*/
+            else    /*if the tile cannot rotates*/
+            {
+            }
+        }
+    }
 }
 
 int main ()
