@@ -599,174 +599,96 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
     }
 }
 
-void fire_threatens (t_board *board,int lin,int col,int dir,int player)
+void fire_threatens (t_board *board,int lin,int col,int dir)
 {
     int i,j;
-    if (! player)
+    if (dir == 1)       
     {
-            if (dir == 1)       
+        for (i=-2 ; i<0 ; i++)          
+        {
+            if (i == -2)
             {
-                for (i=-2 ; i<0 ; i++)          
+                for (j=-2 ; j<3 ; j++)
                 {
-                    if (i == -2)
-                    {
-                        for (j=-2 ; j<3 ; j++)
-                        {
-                            board->m[lin+i][col+j]->th_white++;
-                        }
-                    }
-                    else
-                    {
-                        for (j=-1 ; j<2 ; j++)
-                        {
-                            board->m[lin+i][col+j]->th_white++;
-                        }
-                    }
-                }
-            }
-            else if (dir == 2)
-            {
-                for (j=-2 ; j<0 ; j++)              
-                {
-                    if (j == -2)
-                    {
-                        for (i=-2 ; i<3 ; i++)
-                        {
-                            board->m[lin+i][col+j]->th_white++; 
-                        }
-                    }
-                    else
-                    {
-                        for (i=-1 ; i<2 ; i++)
-                        {
-                            board->m[lin+i][col+j]->th_white++;
-                        }
-                    }
-                }
-            }
-            else if (dir == 3)
-            {
-                for (j=1 ; j<3 ; j++)          
-                {
-                    if (j == 2)
-                    {
-                        for (i=-2 ; i<3 ; i++)
-                        {
-                            board->m[lin+i][col+j]->th_white++;
-                        }
-                    }
-                    else
-                    {
-                        for (i=-1 ; i<2 ; i++)
-                        {
-                            board->m[lin+i][col+j]->th_white++;
-                        }
-                    }
+                    board->m[lin+i][col+j]->th_white++;
+                    board->m[lin+i][col+j]->th_black++;
                 }
             }
             else
             {
-                for (i=1 ; i<3 ; i++)          
+                for (j=-1 ; j<2 ; j++)
                 {
-                    if (i == 2)
-                    {
-                        for (j=-2 ; j<3 ; j++)
-                        {
-                            board->m[lin+i][col+j]->th_white++;
-                        }
-                    }
-                    else
-                    {
-                        for (j=-1 ; j<2 ; j++)
-                        {
-                            board->m[lin+i][col+j]->th_white++;
-                        }
-                    }
+                    board->m[lin+i][col+j]->th_white++;
+                    board->m[lin+i][col+j]->th_black++;
                 }
             }
+        }   
+    }
+    else if (dir == 2)                                                          
+    {
+        for (j=-2 ; j<0 ; j++)              
+        {
+            if (j == -2)
+            {
+                for (i=-2 ; i<3 ; i++)
+                {
+                    board->m[lin+i][col+j]->th_white++; 
+                    board->m[lin+i][col+j]->th_black++;
+                }
+            }
+            else
+            {
+                for (i=-1 ; i<2 ; i++)
+                {
+                    board->m[lin+i][col+j]->th_white++;
+                    board->m[lin+i][col+j]->th_black++;
+                }
+            }
+        }
+    }
+    else if (dir == 3)
+    {
+        for (j=1 ; j<3 ; j++)          
+        {
+            if (j == 2)
+            {
+                for (i=-2 ; i<3 ; i++)
+                {
+                    board->m[lin+i][col+j]->th_white++;
+                    board->m[lin+i][col+j]->th_black++;
+                }
+            }
+            else
+            {
+                for (i=-1 ; i<2 ; i++)
+                {
+                    board->m[lin+i][col+j]->th_white++;
+                    board->m[lin+i][col+j]->th_black++;
+                }
+            }
+        }
     }
     else
     {
-           if (dir == 1)       
-           {
-                for (i=-2 ; i<0 ; i++)          
+        for (i=1 ; i<3 ; i++)          
+        {
+            if (i == 2)
+            {
+                for (j=-2 ; j<3 ; j++)
                 {
-                    if (i == -2)
-                    {
-                        for (j=-2 ; j<3 ; j++)
-                        {
-                            board->m[lin+i][col+j]->th_black++;
-                        }
-                    }
-                    else
-                    {
-                        for (j=-1 ; j<2 ; j++)
-                        {
-                            board->m[lin+i][col+j]->th_black++;
-                        }
-                    }
+                    board->m[lin+i][col+j]->th_white++;
+                    board->m[lin+i][col+j]->th_black++;
                 }
-           }
-           else if (dir == 2)
-           {
-                for (j=-2 ; j<0 ; j++)          
+            }
+            else
+            {
+                for (j=-1 ; j<2 ; j++)
                 {
-                    if (j == -2)
-                    {
-                        for (i=-2 ; i<3 ; i++)
-                        {
-                             board->m[lin+i][col+j]->th_black++;  
-                        }
-                    }
-                    else
-                    {
-                        for (i=-1 ; i<2 ; i++)
-                        {
-                            board->m[lin+i][col+j]->th_black++;
-                        }
-                    }
+                    board->m[lin+i][col+j]->th_white++;
+                    board->m[lin+i][col+j]->th_black++;
                 }
-           }
-           else if (dir == 3)
-           {
-                for (j=1 ; j<3 ; j++)          
-                {
-                    if (j == 2)
-                    {
-                        for (i=-2 ; i<3 ; i++)
-                        {
-                            board->m[lin+i][col+j]->th_black++;
-                        }
-                    }
-                    else
-                    {
-                        for (i=-1 ; i<2 ; i++)
-                        {
-                            board->m[lin+i][col+j]->th_black++;
-                        }
-                    }
-                }
-           }
-           else
-           {
-                for (i=1 ; i<3 ; i++)          
-                {
-                    if (i == 2)
-                    {
-                        for (j=-2 ; j<3 ; j++)
-                        {
-                            board->m[lin+i][col+j]->th_black++;
-                        }
-                    }
-                    else
-                    {
-                        for (j=-1 ; j<2 ; j++)
-                        {
-                            board->m[lin+i][col+j]->th_black++;
-                        }
-                    }
-                }
-           }
+            }
+        }
     }
 }
 
@@ -842,12 +764,12 @@ void bow_threatens (t_board *board,int lin,int col,int dir,int player)
                     board->m[lin+i][col]->th_black++;
             }
         }
-    }
+    }                                                                           
 }
 
 void sai_th_and_cv (t_board *board,int lin,int col,int dir,int player)
 {
-    if (! player)
+    if (! player)                                           
     {
         if (dir == 1)                            
         {
@@ -1165,7 +1087,7 @@ int deploy_tile (t_board *board,int player,int *hand)
                         else
                         {
                             board->m[lin][col]->tile = 16+32*player+(dir-1);         /*puts fire on de square*/
-                            fire_threatens (board,lin,col,dir,player);      /*puts the threaten of the fire*/
+                            fire_threatens (board,lin,col,dir);      /*puts the threaten of the fire*/
                             hand[tile-1]--;
                             return 1;
                         }
@@ -1396,6 +1318,163 @@ int verify_way_to_square (t_board *board,int olin,int ocol,int dlin,int dcol)
     return 0;
 }
 
+void unthreat_bow (t_board *board,int lin,int col,int dir,int player)
+{
+    int i;
+    if (! player)
+    {
+        if (dir == 1)       
+        {
+            for (i=2 ; i<5 ; i++)                    
+            {
+                if (lin-i >= 0)
+                    board->m[lin-i][col]->th_white--;
+            }
+        }
+        else if (dir == 2)
+        {
+            for (i=2 ; i<5 ; i++)                    
+            {
+                if (col-i >= 0)
+                    board->m[lin][col-i]->th_white--;
+            }
+        }
+        else if (dir == 3)
+        {
+            for (i=2 ; i<5 ; i++)                    
+            {
+                if (col+i <= 13)
+                    board->m[lin][col+i]->th_white--;
+            }
+        }
+        else
+        {
+            for (i=2 ; i<5 ; i++)                    
+            {
+                if (lin+i <= 13)
+                    board->m[lin+i][col]->th_white--;
+            }
+        }
+    }
+    else
+    {
+        if (dir == 1)       
+        {
+            for (i=2 ; i<5 ; i++)                    
+            {
+                if (lin-i >= 0)
+                    board->m[lin-i][col]->th_black--;
+            }
+        }
+        else if (dir == 2)
+        {
+            for (i=2 ; i<5 ; i++)                    
+            {
+                if (col-i >= 0)
+                    board->m[lin][col-i]->th_black--;
+            }
+        }
+        else if (dir == 3)
+        {
+            for (i=2 ; i<5 ; i++)                    
+            {
+                if (col+i <= 13)
+                    board->m[lin][col+i]->th_black--;
+            }
+        }
+        else
+        {
+            for (i=2 ; i<5 ; i++)                    
+            {
+                if (lin+i <= 13)
+                    board->m[lin+i][col]->th_black--;
+            }
+        }
+    }                                                                           
+}
+
+void unth_and_uncv_sai (t_board *board,int lin,int col,int dir,int player)
+{
+    if (! player)                                           
+    {
+        if (dir == 1)                            
+        {
+            if (lin-1 >= 0)
+                board->m[lin-1][col]->th_white--;
+            if (col-1 >= 0)
+                board->m[lin][col-1]->cv_white--;
+            if (col+1 <= 13)
+                board->m[lin][col+1]->cv_white--;
+        }
+        else if (dir == 2)
+        {
+            if (col-1 >= 0)
+                board->m[lin][col-1]->th_white--;
+            if (lin-1 >= 0)
+                board->m[lin-1][col]->cv_white--;
+            if (lin+1 <= 13)
+                board->m[lin+1][col]->cv_white--;
+        }
+        else if (dir == 3)
+        {
+            if (col+1 <= 13)
+                board->m[lin][col+1]->th_white--;
+            if (lin+1 <= 13)
+                board->m[lin+1][col]->cv_white--;
+            if (lin-1 >= 0)
+                board->m[lin-1][col]->cv_white--;
+        }
+        else
+        {
+            if (lin+1 <= 13)
+                board->m[lin+1][col]->th_white--;
+            if (col+1 <= 13)
+                board->m[lin][col+1]->cv_white--;
+            if (col-1 >= 0)
+                board->m[lin][col-1]->cv_white--;
+        }
+    }
+    else
+    {
+        if (dir == 1)                            
+        {
+            if (lin-1 >= 0)
+                board->m[lin-1][col]->th_black--;
+            if (col-1 >= 0)
+                board->m[lin][col-1]->cv_black--;
+            if (col+1 <= 13)
+                board->m[lin][col+1]->cv_black--;
+        }
+        else if (dir == 2)
+        {
+            if (col-1 >= 0)
+                board->m[lin][col-1]->th_black--;
+            if (lin-1 >= 0)
+                board->m[lin-1][col]->cv_black--;
+            if (lin+1 <= 13)
+                board->m[lin+1][col]->cv_black--;
+        }
+        else if (dir == 3)
+        {
+            if (col+1 <= 13)
+                board->m[lin][col+1]->th_black--;
+            if (lin+1 <= 13)
+                board->m[lin+1][col]->cv_black--;
+            if (lin-1 >= 0)
+                board->m[lin-1][col]->cv_black--;
+        }
+        else
+        {
+            if (lin+1 <= 13)
+                board->m[lin+1][col]->th_black--;
+            if (col+1 <= 13)
+                board->m[lin][col+1]->cv_black--;
+            if (col-1 >= 0)
+                board->m[lin][col-1]->cv_black--;
+        }
+    }
+}
+
 int move_tile   (t_board *board,int player)
 {
     int olin,ocol;  /*origin line and column*/
@@ -1433,6 +1512,35 @@ int move_tile   (t_board *board,int player)
             int tile = board->m[olin][ocol]->tile;
             if ((tile/4 == WFIRE/4) || (tile/4 == BFIRE/4) || (tile/4 == WBOW/4) || (tile/4 == BBOW/4) || (tile/4 == WSAI/4) || (tile/4 == BSAI/4)) /*if the tile can rotates*/
             {
+                int dir;
+                scanw("%d",&dir);
+                if (! dir)
+                    return 0;
+                else if (! ((dir > 0)&&(dir < 5)))
+                    return 0;
+                else
+                {
+                    if ((tile/4 == WFIRE/4) || (tile/4 == BFIRE/4)) /*if its fire*/
+                    {
+                    }
+                    else /*if its bow or sai*/
+                    {
+                        if ((tile/4 == WBOW/4) || (tile/4 == BBOW/4))   /*if its a bow*/
+                        {
+                            unthreat_bow (board,olin,ocol,(tile%4)+1,player);
+                            board->m[olin][ocol]->tile = 0;
+                            board->m[dlin][dcol]->tile = 8+32*player+(dir-1);
+                            bow_threats (board,dlin,dcol,dir,player);
+                        }
+                        else    /*if its a sai*/
+                        {
+                            unth_and_uncv_sai (board,olin,ocol,(tile%4)+1,player);
+                            board->m[olin][ocol]->tile = 0;
+                            board->m[dlin][dcol]->tile = 24+32*player+(dir-1);
+                            sai_th_and_cv (board,dlin,dcol,dir,player);
+                        }
+                    }
+                }
             }   /*falta tirar o threat e colocar de volta para as peças comuns, girar se pode girar e verificar se mata peças amigas no caso do fogo*/
             else    /*if the tile cannot rotates*/
             {
