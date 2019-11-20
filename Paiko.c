@@ -118,10 +118,16 @@ void initializes_board (t_board *board)			/*initializes the squares of the board
             }
             else
                 board->m[i][j]->tile = UNAVAILABLE;
+            if ((j > 6) && (i < 7) && (j-i <= 7))
+                board->m[i][j]->cv_black = 1;
+            else
+                board->m[i][j]->cv_black = 0;
+            if ((j < 7) && (i > 6) && (i-j <= 7))
+                board->m[i][j]->cv_white = 1;
+            else
+                board->m[i][j]->cv_white = 0;
             board->m[i][j]->th_white      = 0;
             board->m[i][j]->th_black      = 0;
-            board->m[i][j]->cv_white      = 0;
-            board->m[i][j]->cv_black      = 0;
         }
     }
 }
@@ -350,13 +356,16 @@ int buy_tiles (int *hand,int *reserve)
     {
         if ( ((t1 > 0)&&(t1 < 9)) && ((t2 > 0)&&(t2 < 9)) && ((t3 > 0)&&(t3 < 9)) )
         {
-            reserve[t1-1]--;
-            reserve[t2-1]--;
-            reserve[t3-1]--;
-            hand[t1-1]++;
-            hand[t2-1]++;
-            hand[t3-1]++;
-            return 1;
+            if ((reserve[t1-1] > 0)&&(reserve[t2-1] > 0)&&(reserve[t3-1] > 0))
+            {
+                reserve[t1-1]--;
+                reserve[t2-1]--;
+                reserve[t3-1]--;
+                hand[t1-1]++;
+                hand[t2-1]++;
+                hand[t3-1]++;
+                return 1;
+            }
         }
     }
     return 0;
@@ -373,7 +382,7 @@ void print_buy_msg (WINDOW *win)
 
 int verify_tile_dies_black (t_square *square)
 {
-    if (((square->tile / 4 == BFIRE/4) && (((square->cv_black >= 1)&&(square->th_white + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_white >= 1)))) ||	/*if it's a black fire and it dies*/((square->tile >= 36)&&(square->tile < 68)&&(square->tile < BFIRE)&&(square->tile >= BFIRE + 4)  && (((square->cv_black >= 1)&&(square->th_white + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_white >= 2))))) /*its other black tile and it dies*/
+    if (((square->tile / 4 == BFIRE/4) && (((square->cv_black >= 1)&&(square->th_white + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_white >= 1)))) ||	/*if it's a black fire and it dies*/((square->tile >= 36)&&(square->tile < 68)&&(! (square->tile >= BFIRE)&&(square->tile < BFIRE + 4))  && (((square->cv_black >= 1)&&(square->th_white + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_white >= 2))))) /*its other black tile and it dies*/
         return 1;
     else
         return 0; 
@@ -381,13 +390,13 @@ int verify_tile_dies_black (t_square *square)
 
 int verify_tile_dies_white (t_square *square)
 {
-    if (((square->tile / 4 == WFIRE/4) && (((square->cv_white >= 1)&&(square->th_black + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_black >= 1)))) ||	/*if it's a white fire and it dies*/((square->tile >= 4)&&(square->tile < 36)&&(square->tile < WFIRE)&&(square->tile >= WFIRE + 4) && (((square->cv_white >= 1)&&(square->th_black + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_black >= 2))))) /*its other white tile and it dies*/
+    if (((square->tile / 4 == WFIRE/4) && (((square->cv_white >= 1)&&(square->th_black + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_black >= 1)))) ||	/*if it's a white fire and it dies*/((square->tile >= 4)&&(square->tile < 36)&&(! (square->tile >= WFIRE)&&(square->tile < WFIRE + 4)) && (((square->cv_white >= 1)&&(square->th_black + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_black >= 2))))) /*its other white tile and it dies*/
         return 1;
     else
         return 0;
 }
 
-int verify_fire (t_board *board,int lin,int col,int dir,int player)
+int verify_fire (t_board *board,int lin,int col,int dir,int player) /*verify if a friendly tile dies if you put a fire on the square if the determined direction*/
 {
     int i,j;
     t_square *square;   /*BLACK TILES VERIFICATION PART*/
@@ -601,7 +610,7 @@ int verify_fire (t_board *board,int lin,int col,int dir,int player)
 
 void fire_threatens (t_board *board,int lin,int col,int dir)
 {
-    int i,j;
+    int i,j;                                                        
     if (dir == 1)       
     {
         for (i=-2 ; i<0 ; i++)          
@@ -935,7 +944,7 @@ void earth_threatens (t_board *board,int lin,int col,int player)
 
 void sword_threatens (t_board *board,int lin,int col,int player)
 {
-    int i,j;
+    int i,j;                                                                        
     if (! player)
     {
         for (i=-1 ; i<2 ; i++)                                                      
@@ -968,7 +977,7 @@ void sword_threatens (t_board *board,int lin,int col,int player)
 
 void water_th_and_cv (t_board *board,int lin,int col,int player)
 {
-    int i,j;
+    int i,j;                                                                        
     if (! player)
     {
         for (i=-1 ; i<2 ; i++)                                                      
@@ -1007,6 +1016,21 @@ void water_th_and_cv (t_board *board,int lin,int col,int player)
             }
         }
     }                                                                               
+}
+
+void lotus_covers (t_board *board,int lin,int col,int player)
+{
+    int i,j;                                        
+    for (i=-1 ; i<2 ; i++)                          
+    {
+        for (j=-1 ; j<2 ; j++)
+        {
+            if (! player)
+                board->m[lin+i][col+j]->cv_white++;
+            else
+                board->m[lin+i][col+j]->cv_black++;
+        }
+    }
 }
 
 int test_thread (t_board *board,int lin,int col,int player)
@@ -1050,17 +1074,7 @@ int deploy_tile (t_board *board,int player,int *hand)
                     else
                     {
                         board->m[lin][col]->tile = 20+32*player;
-                        int i,j;
-                        for (i=-1 ; i<2 ; i++)
-                        {
-                            for (j=-1 ; j<2 ; j++)
-                            {
-                                if (player)
-                                    board->m[lin+i][col+j]->cv_white++;
-                                else
-                                    board->m[lin+1][col+j]->cv_black++;
-                            }
-                        }
+                        lotus_covers (board,lin,col,player);
                         hand[tile-1]--;
                         return 1;
                     }
@@ -1173,6 +1187,8 @@ int deploy_tile (t_board *board,int player,int *hand)
 void print_debug (WINDOW *wdebug1,WINDOW *wdebug2,t_board *board)
 {
     int i,j;
+    wclear (wdebug1);
+    wclear (wdebug2);
     for (i=0 ; i<7 ; i++)
     {
         for (j=0 ; j<14 ; j++)
@@ -1203,7 +1219,7 @@ void print_debug (WINDOW *wdebug1,WINDOW *wdebug2,t_board *board)
 
 void print_deploy_msg (WINDOW *wboard)
 {
-    mvwprintw (wboard, 37 , 2  , "Write the number of");
+    mvwprintw (wboard, 37 , 2  , "Write the number of");            
     mvwprintw (wboard, 38 , 2  , "the tile that you want");         
     mvwprintw (wboard, 39 , 2  , "to deploy, the position");
     mvwprintw (wboard, 40 , 2  , "on the board and, if the tile");
@@ -1475,13 +1491,281 @@ void unth_and_uncv_sai (t_board *board,int lin,int col,int dir,int player)
     }
 }
 
+void unth_and_uncv_water (t_board *board,int lin,int col,int player)
+{ 
+    int i,j;                                                                        
+    if (! player)
+    {
+        for (i=-1 ; i<2 ; i++)                                                      
+        {
+            for (j=-1 ; j<2 ; j++)
+            {
+                if (! ((i == 0)&&(j == 0)))
+                {
+                    if ((lin+i >= 0)&&(lin+i <= 13)&&(col+j >= 0)&&(col+j <= 13))
+                    {
+                        if ((i == 0) || (j == 0))
+                            board->m[lin+i][col+j]->cv_white--;
+                        else
+                            board->m[lin+i][col+j]->th_white--;
+                    }
+                }
+            }
+        }
+    }
+    else
+    {
+        for (i=-1 ; i<2 ; i++)                                                      
+        {
+            for (j=-1 ; j<2 ; j++)
+            {
+                if (! ((i == 0)&&(j == 0)))
+                {
+                    if ((lin+i >= 0)&&(lin+i <= 13)&&(col+j >= 0)&&(col+j <= 13))
+                    {
+                        if ((i == 0) || (j == 0))
+                            board->m[lin+i][col+j]->cv_black--;
+                        else
+                            board->m[lin+i][col+j]->th_black--;
+                    }
+                }
+            }
+        }
+    }                                                                               
+}
+
+void unthreat_earth (t_board *board,int lin,int col,int player)
+{
+    if (! player)                              
+    {
+        if (lin-2 >= 0 )
+            board->m[lin-2][col]->th_white--;
+        if (lin-1 >= 0 )
+            board->m[lin-1][col]->th_white--;
+        if (lin+1 <= 13)
+            board->m[lin+1][col]->th_white--;
+        if (lin+2 <= 13)
+            board->m[lin+2][col]->th_white--;
+        if (col-2 >= 0 )
+            board->m[lin][col-2]->th_white--;
+        if (col-1 >= 0 )
+            board->m[lin][col-1]->th_white--;
+        if (col+1 <= 13)
+            board->m[lin][col+1]->th_white--;
+        if (col+2 <= 13)
+            board->m[lin][col+2]->th_white--;
+    }
+    else
+    {
+        if (lin-2 >= 0 )
+            board->m[lin-2][col]->th_black--;
+        if (lin-1 >= 0 )
+            board->m[lin-1][col]->th_black--;
+        if (lin+1 <= 13)
+            board->m[lin+1][col]->th_black--;
+        if (lin+2 <= 13)
+            board->m[lin+2][col]->th_black--;
+        if (col-2 >= 0 )
+            board->m[lin][col-2]->th_black--;
+        if (col-1 >= 0 )
+            board->m[lin][col-1]->th_black--;
+        if (col+1 <= 13)
+            board->m[lin][col+1]->th_black--;
+        if (col+2 <= 13)
+            board->m[lin][col+2]->th_black--;
+    }
+}
+
+void uncover_lotus (t_board *board,int lin,int col,int player)
+{
+    int i,j;                                        
+    for (i=-1 ; i<2 ; i++)                          
+    {
+        for (j=-1 ; j<2 ; j++)
+        {
+            if (! player)
+                board->m[lin+i][col+j]->cv_white--;
+            else
+                board->m[lin+i][col+j]->cv_black--;
+        }
+    }
+}
+
+void unthreat_sword (t_board *board,int lin,int col,int player)
+{
+    int i,j;                                                                        
+    if (! player)
+    {
+        for (i=-1 ; i<2 ; i++)                                                      
+        {
+            for (j=-1 ; j<2 ; j++)
+            {
+                if (! ((i == 0)&&(j == 0)))
+                {
+                    if ((lin+i >= 0)&&(lin+i <= 13)&&(col+j >= 0)&&(col+j <= 13))
+                        board->m[lin+i][col+j]->th_white--;
+                }
+            }
+        }
+    }
+    else
+    {
+        for (i=-1 ; i<2 ; i++)                                                      
+        {
+            for (j=-1 ; j<2 ; j++)
+            {
+                if (! ((i == 0)&&(j == 0)))
+                {
+                    if ((lin+i >= 0)&&(lin+i <= 13)&&(col+j >= 0)&&(col+j <= 13))
+                        board->m[lin+i][col+j]->th_black--;
+                }
+            }
+        }
+    }                                                                               
+}
+
+void unthreat_air (t_board *board,int lin,int col,int player)
+{
+    if (! player)                                 
+    {
+        if ((lin-2 >= 0 )&&(col-1 >= 0 ))
+            board->m[lin-2][col-1]->th_white--;
+        if ((lin-2 >= 0 )&&(col+1 <= 13))
+            board->m[lin-2][col+1]->th_white--;
+        if ((lin-1 >= 0 )&&(col-2 >= 0 ))
+            board->m[lin-1][col-2]->th_white--;
+        if ((lin-1 >= 0 )&&(col+2 <= 13))
+            board->m[lin-1][col+2]->th_white--;
+        if ((lin+1 <= 13)&&(col-2 >= 0 ))
+            board->m[lin+1][col-2]->th_white--;
+        if ((lin+1 <= 13)&&(col+2 <= 13))
+            board->m[lin+1][col+2]->th_white--;
+        if ((lin+2 <= 13)&&(col-1 >= 0 ))
+            board->m[lin+2][col-1]->th_white--;
+        if ((lin+2 <= 13)&&(col+1 <= 13))
+            board->m[lin+2][col+1]->th_white--;
+    }
+    else
+    {
+        if ((lin-2 >= 0 )&&(col-1 >= 0 ))
+            board->m[lin-2][col-1]->th_black--;
+        if ((lin-2 >= 0 )&&(col+1 <= 13))
+            board->m[lin-2][col+1]->th_black--;
+        if ((lin-1 >= 0 )&&(col-2 >= 0 ))
+            board->m[lin-1][col-2]->th_black--;
+        if ((lin-1 >= 0 )&&(col+2 <= 13))
+            board->m[lin-1][col+2]->th_black--;
+        if ((lin+1 <= 13)&&(col-2 >= 0 ))
+            board->m[lin+1][col-2]->th_black--;
+        if ((lin+1 <= 13)&&(col+2 <= 13))
+            board->m[lin+1][col+2]->th_black--;
+        if ((lin+2 <= 13)&&(col-1 >= 0 ))
+            board->m[lin+2][col-1]->th_black--;
+        if ((lin+2 <= 13)&&(col+1 <= 13))
+            board->m[lin+2][col+1]->th_black--;
+    }
+}
+
+void unthreat_fire (t_board *board,int lin,int col,int dir)
+{
+    int i,j;                                                        
+    if (dir == 1)       
+    {
+        for (i=-2 ; i<0 ; i++)          
+        {
+            if (i == -2)
+            {
+                for (j=-2 ; j<3 ; j++)
+                {
+                    board->m[lin+i][col+j]->th_white--;
+                    board->m[lin+i][col+j]->th_black--;
+                }
+            }
+            else
+            {
+                for (j=-1 ; j<2 ; j++)
+                {
+                    board->m[lin+i][col+j]->th_white--;
+                    board->m[lin+i][col+j]->th_black--;
+                }
+            }
+        }   
+    }
+    else if (dir == 2)                                              
+    {
+        for (j=-2 ; j<0 ; j++)              
+        {
+            if (j == -2)
+            {
+                for (i=-2 ; i<3 ; i++)
+                {
+                    board->m[lin+i][col+j]->th_white--; 
+                    board->m[lin+i][col+j]->th_black--;
+                }
+            }
+            else
+            {
+                for (i=-1 ; i<2 ; i++)
+                {
+                    board->m[lin+i][col+j]->th_white--;
+                    board->m[lin+i][col+j]->th_black--;
+                }
+            }
+        }
+    }
+    else if (dir == 3)
+    {
+        for (j=1 ; j<3 ; j++)          
+        {
+            if (j == 2)
+            {
+                for (i=-2 ; i<3 ; i++)
+                {
+                    board->m[lin+i][col+j]->th_white--;
+                    board->m[lin+i][col+j]->th_black--;
+                }
+            }
+            else
+            {
+                for (i=-1 ; i<2 ; i++)
+                {
+                    board->m[lin+i][col+j]->th_white--;
+                    board->m[lin+i][col+j]->th_black--;
+                }
+            }
+        }
+    }
+    else
+    {
+        for (i=1 ; i<3 ; i++)          
+        {
+            if (i == 2)
+            {
+                for (j=-2 ; j<3 ; j++)
+                {
+                    board->m[lin+i][col+j]->th_white--;
+                    board->m[lin+i][col+j]->th_black--;
+                }
+            }
+            else
+            {
+                for (j=-1 ; j<2 ; j++)
+                {
+                    board->m[lin+i][col+j]->th_white--;
+                    board->m[lin+i][col+j]->th_black--;
+                }
+            }
+        }
+    }
+}
+
 int move_tile   (t_board *board,int player)
 {
     int olin,ocol;  /*origin line and column*/
     scanw("%d %d", &olin, &ocol);	/*picks the coordinate of the tile that the player wants to move*/
     olin--;
     ocol--;
-    if (! ((olin == -1)&&(ocol == -1))) /*press zero to cancel the move*/
+    if ((olin == -1)&&(ocol == -1)) /*press zero to cancel the move*/
         return 0;
     else if ( (board->m[olin][ocol]->tile / 4 == WAIR/4) || (board->m[olin][ocol]->tile / 4 == BAIR/4) || (board->m[olin][ocol]->tile / 4 == WLOTUS/4) || (board->m[olin][ocol]->tile / 4 == BLOTUS/4) ) /*if cannot move*/
         return 0;
@@ -1495,7 +1779,7 @@ int move_tile   (t_board *board,int player)
         scanw("%d %d", &dlin, &dcol);
         dlin--;
         dcol--;
-        if (! ((dlin == -1)&&(dcol == -1))) /*press zero to cancel the move*/
+        if ((dlin == -1)&&(dcol == -1)) /*press zero to cancel the move*/
             return 0;
         else if (! ((dlin < 14)&&(dlin >= 0) && (dcol < 14)&&(dcol >= 0) && (dcol+dlin >= 6)&&(dcol+dlin <= 20) && (dcol-dlin <= 7)&&(dcol-dlin >= -7)) )	/*tests if it's on the board*/
             return 0;
@@ -1522,6 +1806,19 @@ int move_tile   (t_board *board,int player)
                 {
                     if ((tile/4 == WFIRE/4) || (tile/4 == BFIRE/4)) /*if its fire*/
                     {
+                        unthreat_fire (board,olin,ocol,(tile%4)+1);     /*removes the threats of the fire*/
+                        if (verify_fire (board,dlin,dcol,dir,player))   /*tests if the fire kills a friendly tile if it moves*/
+                        {
+                            board->m[olin][ocol]->tile = 0;
+                            board->m[dlin][dcol]->tile = 16+32*player+(dir-1);  /*move the fire*/
+                            fire_threatens (board,dlin,dcol,dir);               /*threats the new area*/
+                            return 1;
+                        }
+                        else                                                /*if kills*/
+                        {
+                            fire_threatens (board,olin,ocol,(tile%4)+1);    /*do not move the fire and puts the threat again*/
+                            return 0;
+                        }
                     }
                     else /*if its bow or sai*/
                     {
@@ -1530,7 +1827,8 @@ int move_tile   (t_board *board,int player)
                             unthreat_bow (board,olin,ocol,(tile%4)+1,player);
                             board->m[olin][ocol]->tile = 0;
                             board->m[dlin][dcol]->tile = 8+32*player+(dir-1);
-                            bow_threats (board,dlin,dcol,dir,player);
+                            bow_threatens (board,dlin,dcol,dir,player);
+                            return 1;
                         }
                         else    /*if its a sai*/
                         {
@@ -1538,15 +1836,204 @@ int move_tile   (t_board *board,int player)
                             board->m[olin][ocol]->tile = 0;
                             board->m[dlin][dcol]->tile = 24+32*player+(dir-1);
                             sai_th_and_cv (board,dlin,dcol,dir,player);
+                            return 1;
                         }
                     }
                 }
-            }   /*falta tirar o threat e colocar de volta para as peças comuns, girar se pode girar e verificar se mata peças amigas no caso do fogo*/
+            } 
             else    /*if the tile cannot rotates*/
             {
+                if ((tile/4 == WEARTH/4)||(tile/4 == BEARTH/4))  /*if its a earth*/
+                {
+                    unthreat_earth (board,olin,ocol,player);
+                    board->m[olin][ocol]->tile = 0;
+                    board->m[dlin][dcol]->tile = 12+32*player;
+                    earth_threatens (board,dlin,dcol,player);
+                    return 1;
+                }
+                else if ((tile/4 == WSWORD/4)||(tile/4 == BSWORD/4))  /*is its a sword*/
+                {
+                    unthreat_sword (board,olin,ocol,player);
+                    board->m[olin][ocol]->tile = 0;
+                    board->m[dlin][dcol]->tile = 28+32*player;
+                    sword_threatens (board,dlin,dcol,player);
+                    return 1;
+                }
+                else        /*if its a water*/
+                {
+                    unth_and_uncv_water (board,olin,ocol,player);
+                    board->m[olin][ocol]->tile = 0;
+                    board->m[dlin][dcol]->tile = 32+32*player;
+                    water_th_and_cv (board,dlin,dcol,player);
+                    return 1;
+                }
             }
         }
     }
+}
+
+void print_move_msg (WINDOW *wboard)
+{
+    mvwprintw (wboard, 37 , 2  , "Write the position of");            
+    mvwprintw (wboard, 38 , 2  , "the tile that you want");         
+    mvwprintw (wboard, 39 , 2  , "to move, the position");
+    mvwprintw (wboard, 40 , 2  , "that you want to move and,if");
+    mvwprintw (wboard, 41 , 2  , "it can rotate, his rotation.");
+    mvwprintw (wboard, 42 , 2  , "Type 0 to cancel the action.");
+    mvwprintw (wboard, 37 , 47 , "For the directions:");            
+    mvwprintw (wboard, 38 , 47 , "1 - Up");       
+    mvwprintw (wboard, 39 , 47 , "2 - Left");
+    mvwprintw (wboard, 40 , 47 , "3 - Right");
+    mvwprintw (wboard, 41 , 47 , "4 - Down");
+    wrefresh  (wboard);
+}
+
+void verify_board_captures (t_board *board)
+{
+    t_square *square;
+    int i,j;
+    for (i=0 ; i<14 ; i++)
+    {
+        for (j=0 ; j<14 ; j++)
+        {
+            if ((j+i >= 6)&&(j+i <= 20) && (j-i <= 7)&&(j-i >= -7)) /*if its on the board*/
+            {
+                square = board->m[i][j];
+                if (square->tile/4 == WFIRE/4)     /*according to the developers of paiko, the fire dies first*/
+                {
+                    if (((square->th_black >= 1)&&(square->cv_white == 0)) || ((square->th_black >= 2)&&(square->cv_white >= 1)))   /*if the white fire dies*/
+                    {
+                        unthreat_fire (board,i,j,(square->tile % 4)+1);
+                        square->tile = EMPTY;
+                    }
+                }
+                else if (square->tile/4 == BFIRE/4)
+                {
+                    if (((square->th_white >= 1)&&(square->cv_black == 0)) || ((square->th_white >= 2)&&(square->cv_black >= 1)))   /*if the black fire dies*/
+                    {
+                        unthreat_fire (board,i,j,(square->tile % 4)+1);
+                        square->tile = EMPTY;
+                    }
+                }
+            }
+        }
+    }
+    for (i=0 ; i<14 ; i++)
+    {
+        for (j=0 ; j<14 ; j++)
+        {
+            if ((j+i >= 6)&&(j+i <= 20) && (j-i <= 7)&&(j-i >= -7)) /*if its on the board*/
+            {
+                square = board->m[i][j];
+                if ((square->tile/4 != WFIRE/4)&&(square->tile/4 != BFIRE/4)&&(square->tile != EMPTY)) /*if the square has a tile and it isn't a fire*/
+                {
+                    if (verify_tile_dies_black (square) || verify_tile_dies_white (square))
+                    {
+                        int player;
+                        if ((square->tile >= 4)&&(square->tile < 36))
+                            player = 0;
+                        else
+                            player = 1;
+                        if ((square->tile/4 == WAIR/4)||(square->tile/4 == BAIR/4))             /*if its a air*/
+                        {
+                            unthreat_air (board,i,j,player);
+                        }
+                        else if ((square->tile/4 == WBOW/4)||(square->tile/4 == BBOW/4))        /*if its a bow*/
+                        {
+                            unthreat_bow (board,i,j,(square->tile % 4)+1,player);
+                        }
+                        else if ((square->tile/4 == WEARTH/4)||(square->tile/4 == BEARTH/4))    /*if its a earth*/
+                        {
+                            unthreat_earth (board,i,j,player);
+                        }
+                        else if ((square->tile/4 == WLOTUS/4)||(square->tile/4 == BLOTUS/4))    /*if its a lotus*/
+                        {   
+                            uncover_lotus (board,i,j,player);
+                        }
+                        else if ((square->tile/4 == WSAI/4)||(square->tile/4 == BSAI/4))        /*if its a sai*/
+                        {
+                            unth_and_uncv_sai (board,i,j,(square->tile % 4)+1,player);
+                        }
+                        else if ((square->tile/4 == WSWORD/4)||(square->tile/4 == BSWORD/4))    /*if its a sword*/
+                        {
+                            unthreat_sword (board,i,j,player);
+                        }
+                        else                                                                    /*if its a water*/
+                        {
+                            unth_and_uncv_water (board,i,j,player);
+                        }
+                        square->tile = EMPTY;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void verify_points (t_board *board,int *white_points,int *black_points)
+{
+    int i,j;
+    t_square *square;
+    *white_points = 0;
+    *black_points = 0;     
+    for (i=0 ; i<14 ; i++)
+    {
+        for (j=0 ; j<14 ; j++)
+        {
+            if ((j+i >= 6)&&(j+i <= 20) && (j-i <= 7)&&(j-i >= -7))     /*if its on the board*/
+            {
+                square = board->m[i][j];
+                if ((j > 6) && (i < 7) && (j-i <= 7))   /*black home-ground*/
+                {
+                    if ((square->tile >= 4) && (square->tile < 36))
+                        *white_points = *white_points + 2;
+                }
+                else if ((j < 7) && (i > 6) && (i-j <= 7))  /*white home-ground*/
+                {
+                    if ((square->tile >= 36) && (square->tile < 68))
+                        *black_points = *black_points + 2;
+                }
+                else /* middle-ground*/
+                {
+                    if ((square->tile >= 4) && (square->tile < 36))
+                        *white_points = *white_points + 1;
+                    else if ((square->tile >= 36) && (square->tile < 68))
+                        *black_points = *black_points + 1;
+                }
+            }
+        }
+    }
+}
+
+void print_points (WINDOW *wboard,int white_points,int black_points)
+{
+    mvwprintw (wboard, 2, 54, "White Points: %d ",white_points);
+    mvwprintw (wboard, 3, 54, "Black Points: %d ",black_points);
+    wrefresh (wboard);
+}
+
+void print_win_msg (WINDOW *wboard,int who_win)
+{
+    if (who_win == 0)
+    {
+        mvwprintw (wboard, 2, 50, "The white wins!      ");
+        mvwprintw (wboard, 3, 50, "Press 'q' to close   ");
+        wrefresh(wboard);
+    }
+    else if (who_win == 1)
+    {
+        mvwprintw (wboard, 2, 50, "The black wins!      ");
+        mvwprintw (wboard, 3, 50, "Press 'q' to close   ");
+        wrefresh(wboard);
+    }
+    else
+    {
+        /*tie*/
+    }
+    char key;
+    key = getch();
+    while (key != 'q')
+        key = getch();
 }
 
 int main ()
@@ -1594,6 +2081,9 @@ int main ()
     char **tiles;
     int finish = 0;
     int player = 0;		/*zero = white, one = black*/
+    int white_points = 0;
+    int black_points = 0;
+    int who_win = -1; /*-1 = game doesn't and yet, 0 = white win, 1 = black win, 2 = tie*/
     tiles = (char **) malloc (8*sizeof(char *));
     int i;
     for (i=0 ; i<8 ; i++)
@@ -1604,9 +2094,10 @@ int main ()
     initializes_v	  (rv_white,rv_black,3);
     initializes_board (&board);
 
-    while (! finish)
+    while ((who_win == -1)&&(! finish))
     {
         print_board 	  (wboard,&board);
+        print_points      (wboard,white_points,black_points);
         print_vector	  (whand   ,hv_white,hv_black,tiles);
         print_vector	  (wreserve,rv_white,rv_black,tiles);
         print_debug       (wdebug1,wdebug2,&board);
@@ -1626,8 +2117,10 @@ int main ()
             }
         }
         else if (k == 'm')
-        {
-            /*makes maves tiles*/
+        { /*makes moves tiles*/
+            print_move_msg (wboard);
+            if (move_tile (&board,player))
+                player = (player + 1)%2;
         }
         else if (k == 'd')	/*makes deploy tiles*/
         {
@@ -1645,7 +2138,16 @@ int main ()
         }
         else if (k == 'q')
             finish = 1;
-    }	
+        verify_board_captures (&board);
+        verify_points (&board,&white_points,&black_points);
+        if (white_points >= 10)
+            who_win = 0;
+        if (black_points >= 10)
+            who_win = 1;        
+    }
+    print_board (wboard,&board);
+    if (! finish)
+        print_win_msg (wboard,who_win);	
     endwin();
     return 1;
 }
