@@ -27,66 +27,6 @@
 #define BSWORD 60	/*15*/	
 #define BWATER 64	/*16*/
 
-#define spriteAIR01 "+---+"
-#define spriteAIR02 "| A |"
-#define spriteAIR03 "+---+"
-
-#define spriteBOW11 "+-^-+"
-#define spriteBOW12 "| B |"
-#define spriteBOW13 "+---+"
-#define spriteBOW21 "+---+"
-#define spriteBOW22 "< B |"
-#define spriteBOW23 "+---+"
-#define spriteBOW31 "+---+"
-#define spriteBOW32 "| B >"
-#define spriteBOW33 "+---+"
-#define spriteBOW41 "+---+"
-#define spriteBOW42 "| B |"
-#define spriteBOW43 "+-V-+"
-
-#define spriteEAR01 "+---+"
-#define spriteEAR02 "| E |"
-#define spriteEAR03 "+---+"
-
-#define spriteFIR11 "+-^-+"
-#define spriteFIR12 "| F |"
-#define spriteFIR13 "+---+"
-#define spriteFIR21 "+---+"
-#define spriteFIR22 "< F |"
-#define spriteFIR23 "+---+"
-#define spriteFIR31 "+---+"
-#define spriteFIR32 "| F >"
-#define spriteFIR33 "+---+"
-#define spriteFIR41 "+---+"
-#define spriteFIR42 "| F |"
-#define spriteFIR43 "+-V-+"
-
-#define spriteLOT01 "+---+"
-#define spriteLOT02 "| L |"
-#define spriteLOT03 "+---+"
-
-#define spriteSAI11 "+-^-+"
-#define spriteSAI12 "| I |"
-#define spriteSAI13 "+---+"
-#define spriteSAI21 "+---+"
-#define spriteSAI22 "< I |"
-#define spriteSAI23 "+---+"
-#define spriteSAI31 "+---+"
-#define spriteSAI32 "| I >"
-#define spriteSAI33 "+---+"
-#define spriteSAI41 "+---+"
-#define spriteSAI42 "| I |"
-#define spriteSAI43 "+-V-+"
-
-#define spriteSWO01 "+---+"
-#define spriteSWO02 "| S |"
-#define spriteSWO03 "+---+"
-
-#define spriteWAT01 "+---+"
-#define spriteWAT02 "| W |"
-#define spriteWAT03 "+---+"
-
-
 typedef struct t_square
 {
     int th_white;
@@ -132,123 +72,60 @@ void initializes_board (t_board *board)			/*initializes the squares of the board
     }
 }
 
-void print_tile (WINDOW *wboard, int i,int j, int tile)
+void print_tile (WINDOW *wboard,int i,int j,int tile)
 {
-    int tileT;  /*have the type of tile*/
+    int tileT;  /*have the type of tile*/                       
     if ((tile >= 4)&&(tile < 36))
         tileT = tile / 4;
     else
         tileT = (tile - 32)/4;
-    if (tileT == 1) /*prints air*/
+    mvwaddch (wboard, 1+i*3, 1+j*5, ACS_ULCORNER);
+    mvwaddch (wboard, 1+i*3, 5+j*5, ACS_URCORNER);
+    mvwaddch (wboard, 3+i*3, 1+j*5, ACS_LLCORNER);
+    mvwaddch (wboard, 3+i*3, 5+j*5, ACS_LRCORNER);
+    mvwaddch (wboard, 1+i*3, 2+j*5, ACS_HLINE);
+    mvwaddch (wboard, 1+i*3, 4+j*5, ACS_HLINE);
+    mvwaddch (wboard, 3+i*3, 2+j*5, ACS_HLINE);
+    mvwaddch (wboard, 3+i*3, 4+j*5, ACS_HLINE);
+
+
+    if ((tileT == 1)||(tileT == 3)||(tileT == 5)||(tileT == 7)||(tileT == 8))
     {
-        mvwprintw (wboard, 1+i*3, 1+j*5, spriteAIR01);
-        mvwprintw (wboard, 2+i*3, 1+j*5, spriteAIR02);
-        mvwprintw (wboard, 3+i*3, 1+j*5, spriteAIR03);
+        mvwaddch (wboard, 1+i*3, 3+j*5, ACS_HLINE);
+        mvwaddch (wboard, 3+i*3, 3+j*5, ACS_HLINE);
+        mvwaddch (wboard, 2+i*3, 1+j*5, ACS_VLINE);
+        mvwaddch (wboard, 2+i*3, 5+j*5, ACS_VLINE);
+        if (tileT == 1)
+            mvwaddch (wboard, 2+i*3, 3+j*5, 'A');
+        else if (tileT == 3)
+            mvwaddch (wboard, 2+i*3, 3+j*5, 'E');
+        else if (tileT == 5)
+            mvwaddch (wboard, 2+i*3, 3+j*5, 'L');
+        else if (tileT == 7)
+            mvwaddch (wboard, 2+i*3, 3+j*5, 'S');
+        else
+            mvwaddch (wboard, 2+i*3, 3+j*5, 'W');
     }
-    else if (tileT == 2) /*prints bow*/
+    else
     {
+        mvwaddch (wboard, 1+i*3, 3+j*5, ACS_HLINE);
+        mvwaddch (wboard, 2+i*3, 1+j*5, ACS_VLINE);
+        mvwaddch (wboard, 2+i*3, 5+j*5, ACS_VLINE);
+        mvwaddch (wboard, 3+i*3, 3+j*5, ACS_HLINE);
         if (tile % 4 == 0)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteBOW11);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteBOW12);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteBOW13);
-        }
+            mvwaddch (wboard, 1+i*3, 3+j*5, '^');
         else if (tile % 4 == 1)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteBOW21);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteBOW22);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteBOW23);
-        }
+            mvwaddch (wboard, 2+i*3, 1+j*5, '<');
         else if (tile % 4 == 2)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteBOW31);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteBOW32);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteBOW33);
-        }
-        else if (tile % 4 == 3)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteBOW41);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteBOW42);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteBOW43);
-        }                                                       
-    }
-    else if (tileT == 3) /*prints earth*/
-    {
-        mvwprintw (wboard, 1+i*3, 1+j*5, spriteEAR01);
-        mvwprintw (wboard, 2+i*3, 1+j*5, spriteEAR02);
-        mvwprintw (wboard, 3+i*3, 1+j*5, spriteEAR03);
-    }
-    else if (tileT == 4) /*prints fire*/
-    { 
-        if (tile % 4 == 0)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteFIR11);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteFIR12);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteFIR13);
-        }
-        else if (tile % 4 == 1)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteFIR21);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteFIR22);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteFIR23);
-        }
-        else if (tile % 4 == 2)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteFIR31);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteFIR32);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteFIR33);
-        }
-        else if (tile % 4 == 3)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteFIR41);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteFIR42);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteFIR43);
-        }                                                       
-    }
-    else if (tileT == 5) /*prints lotus*/
-    {
-        mvwprintw (wboard, 1+i*3, 1+j*5, spriteLOT01);
-        mvwprintw (wboard, 2+i*3, 1+j*5, spriteLOT02);
-        mvwprintw (wboard, 3+i*3, 1+j*5, spriteLOT03);
-    }
-    else if (tileT == 6) /*prints sai*/
-    { 
-        if (tile % 4 == 0)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteSAI11);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteSAI12);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteSAI13);
-        }
-        else if (tile % 4 == 1)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteSAI21);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteSAI22);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteSAI23);
-        }
-        else if (tile % 4 == 2)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteSAI31);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteSAI32);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteSAI33);
-        }
-        else if (tile % 4 == 3)
-        {
-            mvwprintw (wboard, 1+i*3, 1+j*5, spriteSAI41);
-            mvwprintw (wboard, 2+i*3, 1+j*5, spriteSAI42);
-            mvwprintw (wboard, 3+i*3, 1+j*5, spriteSAI43);
-        }                                                       
-    }
-    else if (tileT == 7) /*prints sword*/
-    {
-        mvwprintw (wboard, 1+i*3, 1+j*5, spriteSWO01);
-        mvwprintw (wboard, 2+i*3, 1+j*5, spriteSWO02);
-        mvwprintw (wboard, 3+i*3, 1+j*5, spriteSWO03);
-    }
-    else                 /*prints water*/
-    {
-        mvwprintw (wboard, 1+i*3, 1+j*5, spriteWAT01);
-        mvwprintw (wboard, 2+i*3, 1+j*5, spriteWAT02);
-        mvwprintw (wboard, 3+i*3, 1+j*5, spriteWAT03);
+            mvwaddch (wboard, 2+i*3, 5+j*5, '>');
+        else
+            mvwaddch (wboard, 3+i*3, 3+j*5, 'V');
+        if (tileT == 2)
+            mvwaddch (wboard, 2+i*3, 3+j*5, 'B');
+        else if (tileT == 4)
+            mvwaddch (wboard, 2+i*3, 3+j*5, 'F');
+        else
+            mvwaddch (wboard, 2+i*3, 3+j*5, 'I');
     }
 }
 
@@ -270,16 +147,34 @@ void print_board (WINDOW *wboard,t_board *board)	/*prints the board*/
                 wattron (wboard,COLOR_PAIR(10));
             if (tile == 0)
             {
-                mvwprintw (wboard, 1+i*3, 1+j*5, "+---+");
-                mvwprintw (wboard, 2+i*3, 1+j*5, "|   |");
-                mvwprintw (wboard, 3+i*3, 1+j*5, "+---+");
+                mvwaddch (wboard, 1+i*3, 1+j*5, ACS_ULCORNER);
+                mvwaddch (wboard, 1+i*3, 5+j*5, ACS_URCORNER);
+                mvwaddch (wboard, 3+i*3, 1+j*5, ACS_LLCORNER);
+                mvwaddch (wboard, 3+i*3, 5+j*5, ACS_LRCORNER);
+                mvwaddch (wboard, 1+i*3, 2+j*5, ACS_HLINE);
+                mvwaddch (wboard, 1+i*3, 3+j*5, ACS_HLINE);
+                mvwaddch (wboard, 1+i*3, 4+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 2+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 3+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 4+j*5, ACS_HLINE);
+                mvwaddch (wboard, 2+i*3, 1+j*5, ACS_VLINE);
+                mvwaddch (wboard, 2+i*3, 5+j*5, ACS_VLINE);
             }
             else if (tile == -2)
             {
                 wattron  (wboard,COLOR_PAIR(18));
-                mvwprintw (wboard, 1+i*3, 1+j*5, "+---+");
-                mvwprintw (wboard, 2+i*3, 1+j*5, "|   |");
-                mvwprintw (wboard, 3+i*3, 1+j*5, "+---+");
+                mvwaddch (wboard, 1+i*3, 1+j*5, ACS_ULCORNER);
+                mvwaddch (wboard, 1+i*3, 5+j*5, ACS_URCORNER);
+                mvwaddch (wboard, 3+i*3, 1+j*5, ACS_LLCORNER);
+                mvwaddch (wboard, 3+i*3, 5+j*5, ACS_LRCORNER);
+                mvwaddch (wboard, 1+i*3, 2+j*5, ACS_HLINE);
+                mvwaddch (wboard, 1+i*3, 3+j*5, ACS_HLINE);
+                mvwaddch (wboard, 1+i*3, 4+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 2+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 3+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 4+j*5, ACS_HLINE);
+                mvwaddch (wboard, 2+i*3, 1+j*5, ACS_VLINE);
+                mvwaddch (wboard, 2+i*3, 5+j*5, ACS_VLINE);
                 wattroff (wboard,COLOR_PAIR(18));
             }
             else if ((tile >= 4)&&(tile < 36)) /*white*/
@@ -306,6 +201,7 @@ void print_board (WINDOW *wboard,t_board *board)	/*prints the board*/
     mvwprintw (wboard, 2, 2, "b - buy tiles");
     mvwprintw (wboard, 3, 2, "m - move tiles");
     mvwprintw (wboard, 4, 2, "d - deploy tiles");
+    mvwprintw (wboard, 5, 2, "s - show cover or threat");
     box (wboard,0,0);
     wrefresh(wboard);
 }
@@ -335,13 +231,15 @@ void initializes_t (char **tiles)
 void print_vector (WINDOW *win,int *white,int *black,char **tiles)
 {
     int i;
+    mvwprintw (win, 8, 5, "WHITE");
+    mvwprintw (win, 23, 5, "BLACK");
     for (i=0 ; i<8 ; i++)
     {
         wattron(win,COLOR_PAIR(10+i));
-        mvwprintw (win, 5+i  , 5  , tiles[i]);
-        mvwprintw (win, 20+i , 5  , tiles[i]);
-        mvwprintw (win, 5+i  , 10 , " = %d",white[i]);
-        mvwprintw (win, 20+i , 10 , " = %d",black[i]);
+        mvwprintw (win, 10+i  , 5  , tiles[i]);
+        mvwprintw (win, 25+i , 5  , tiles[i]);
+        mvwprintw (win, 10+i  , 10 , " = %d",white[i]);
+        mvwprintw (win, 25+i , 10 , " = %d",black[i]);
         wattroff(win,COLOR_PAIR(10+i));
     }
     box(win,0,0);
@@ -2036,6 +1934,75 @@ void print_win_msg (WINDOW *wboard,int who_win)
         key = getch();
 }
 
+void print_board_cv (WINDOW *wboard,t_board *board,int player)                                                  
+{
+    int i,j;
+    wattron  (wboard,COLOR_PAIR(4));
+    for (i=0 ; i<14 ; i++)
+    {
+        for (j=0 ; j<14 ; j++)
+        {
+            if (((board->m[i][j]->cv_white >= 1)&&(! player)) || ((board->m[i][j]->cv_black >= 1)&&(player)))
+            {
+                mvwaddch (wboard, 1+i*3, 1+j*5, ACS_ULCORNER);
+                mvwaddch (wboard, 1+i*3, 5+j*5, ACS_URCORNER);
+                mvwaddch (wboard, 3+i*3, 1+j*5, ACS_LLCORNER);
+                mvwaddch (wboard, 3+i*3, 5+j*5, ACS_LRCORNER);
+                mvwaddch (wboard, 1+i*3, 2+j*5, ACS_HLINE);
+                mvwaddch (wboard, 1+i*3, 3+j*5, ACS_HLINE);
+                mvwaddch (wboard, 1+i*3, 4+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 2+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 3+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 4+j*5, ACS_HLINE);
+                mvwaddch (wboard, 2+i*3, 1+j*5, ACS_VLINE);
+                mvwaddch (wboard, 2+i*3, 5+j*5, ACS_VLINE);
+            }
+        }
+    }
+    wattroff (wboard,COLOR_PAIR(4));
+    wrefresh (wboard);
+}
+
+void print_board_th (WINDOW *wboard,t_board *board,int player)                                                  
+{
+    int i,j;
+    wattron  (wboard,COLOR_PAIR(5));
+    for (i=0 ; i<14 ; i++)
+    {
+        for (j=0 ; j<14 ; j++)
+        {
+            if (((board->m[i][j]->th_white >= 1)&&(! player)) || ((board->m[i][j]->th_black >= 1)&&(player)))
+            {
+                mvwaddch (wboard, 1+i*3, 1+j*5, ACS_ULCORNER);
+                mvwaddch (wboard, 1+i*3, 5+j*5, ACS_URCORNER);
+                mvwaddch (wboard, 3+i*3, 1+j*5, ACS_LLCORNER);
+                mvwaddch (wboard, 3+i*3, 5+j*5, ACS_LRCORNER);
+                mvwaddch (wboard, 1+i*3, 2+j*5, ACS_HLINE);
+                mvwaddch (wboard, 1+i*3, 3+j*5, ACS_HLINE);
+                mvwaddch (wboard, 1+i*3, 4+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 2+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 3+j*5, ACS_HLINE);
+                mvwaddch (wboard, 3+i*3, 4+j*5, ACS_HLINE);
+                mvwaddch (wboard, 2+i*3, 1+j*5, ACS_VLINE);
+                mvwaddch (wboard, 2+i*3, 5+j*5, ACS_VLINE);
+            }
+        }
+    }
+    wattroff (wboard,COLOR_PAIR(5));
+    wrefresh (wboard);
+}
+
+void print_show_msg (WINDOW *wboard)
+{
+    mvwprintw (wboard, 37 , 2  , "Press 'c' to show cover");       
+    mvwprintw (wboard, 38 , 2  , "Press 't' to show threat");      
+    mvwprintw (wboard, 39 , 2  , "For the white, press 'w'");
+    mvwprintw (wboard, 40 , 2  , "For the black, press 'b'");
+    mvwprintw (wboard, 41 , 2  , "After show, press anything");
+    mvwprintw (wboard, 42 , 2  , "to continue");
+    wrefresh(wboard);
+}
+
 int main ()
 {
     initscr();
@@ -2060,6 +2027,8 @@ int main ()
     init_pair(1,COLOR_GREEN   ,COLOR_BLACK);
     init_pair(2,10            ,COLOR_BLACK);
     init_pair(3,13            ,COLOR_BLACK);
+    init_pair(4,COLOR_MAGENTA ,COLOR_BLACK);    /*Cover color*/
+    init_pair(5,COLOR_RED     ,COLOR_BLACK);    /*Threat color*/
 
     init_pair(10,COLOR_CYAN	  ,COLOR_BLACK);	/*Air color*/
     init_pair(11,11		      ,COLOR_BLACK);	/*Bow color*/
@@ -2086,6 +2055,7 @@ int main ()
     int who_win = -1; /*-1 = game doesn't and yet, 0 = white win, 1 = black win, 2 = tie*/
     tiles = (char **) malloc (8*sizeof(char *));
     int i;
+    char k;
     for (i=0 ; i<8 ; i++)
         tiles[i] =  (char *) malloc (6*sizeof(char));
 
@@ -2101,7 +2071,7 @@ int main ()
         print_vector	  (whand   ,hv_white,hv_black,tiles);
         print_vector	  (wreserve,rv_white,rv_black,tiles);
         print_debug       (wdebug1,wdebug2,&board);
-        char k = getch();
+        k = getch();
         if (k == 'b') 	/*makes buy tiles*/
         {
             print_buy_msg (wboard);
@@ -2135,6 +2105,28 @@ int main ()
                 if (deploy_tile (&board,player,hv_black))
                     player =( player + 1)%2;
             }
+        }
+        else if (k == 's')
+        {
+            print_show_msg (wboard);
+            k = getch ();
+            if (k == 'c')
+            {
+                k = getch ();
+                if (k == 'w')
+                    print_board_cv (wboard,&board,0);
+                else if (k == 'b')
+                    print_board_cv (wboard,&board,1);
+            }
+            else if (k == 't')
+            {
+                k = getch ();
+                if (k == 'w')
+                    print_board_th (wboard,&board,0);
+                else if (k == 'b')
+                    print_board_th (wboard,&board,1);
+            }
+            k = getch ();
         }
         else if (k == 'q')
             finish = 1;
