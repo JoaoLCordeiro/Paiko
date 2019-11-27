@@ -280,7 +280,7 @@ void print_buy_msg (WINDOW *win)
 
 int verify_tile_dies_black (t_square *square)
 {
-    if (((square->tile / 4 == BFIRE/4) && (((square->cv_black >= 1)&&(square->th_white + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_white >= 1)))) ||	/*if it's a black fire and it dies*/((square->tile >= 36)&&(square->tile < 68)&&(! (square->tile >= BFIRE)&&(square->tile < BFIRE + 4))  && (((square->cv_black >= 1)&&(square->th_white + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_white >= 2))))) /*its other black tile and it dies*/
+    if (((square->tile / 4 == BFIRE/4) && (((square->cv_black >= 1)&&(square->th_white + 1 >= 2)) || ((square->cv_black == 0)&&(square->th_white + 1 >= 1)))) ||	/*if it's a black fire and it dies*/((square->tile >= 36)&&(square->tile < 68)&&(! (square->tile >= BFIRE)&&(square->tile < BFIRE + 4))  && (((square->cv_black >= 1)&&(square->th_white + 1 >= 3)) || ((square->cv_black == 0)&&(square->th_white + 1 >= 2))))) /*its other black tile and it dies*/
         return 1;
     else
         return 0; 
@@ -288,7 +288,7 @@ int verify_tile_dies_black (t_square *square)
 
 int verify_tile_dies_white (t_square *square)
 {
-    if (((square->tile / 4 == WFIRE/4) && (((square->cv_white >= 1)&&(square->th_black + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_black >= 1)))) ||	/*if it's a white fire and it dies*/((square->tile >= 4)&&(square->tile < 36)&&(! (square->tile >= WFIRE)&&(square->tile < WFIRE + 4)) && (((square->cv_white >= 1)&&(square->th_black + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_black >= 2))))) /*its other white tile and it dies*/
+    if (((square->tile / 4 == WFIRE/4) && (((square->cv_white >= 1)&&(square->th_black + 1 >= 2)) || ((square->cv_white == 0)&&(square->th_black + 1 >= 1)))) ||	/*if it's a white fire and it dies*/((square->tile >= 4)&&(square->tile < 36)&&(! (square->tile >= WFIRE)&&(square->tile < WFIRE + 4)) && (((square->cv_white >= 1)&&(square->th_black + 1 >= 3)) || ((square->cv_white == 0)&&(square->th_black + 1 >= 2))))) /*its other white tile and it dies*/
         return 1;
     else
         return 0;
@@ -1669,7 +1669,7 @@ int move_tile   (t_board *board,int player)
         return 0;
     else if (! ((olin < 14)&&(olin >= 0) && (ocol < 14)&&(ocol >= 0) && (ocol+olin >= 6)&&(ocol+olin <= 20) && (ocol-olin <= 7)&&(ocol-olin >= -7)) )	/*tests if it's on the board*/
         return 0;
-    else if (! ((! player) && (board->m[olin][ocol]->tile > 0) && (board->m[olin][ocol]->tile < 36)) || ((player) && (board->m[olin][ocol]->tile > 35) && (board->m[olin][ocol]->tile < 68)) ) /*tests if it's a friendly tile*/
+    else if (! (((! player) && (board->m[olin][ocol]->tile > 0) && (board->m[olin][ocol]->tile < 36)) || ((player) && (board->m[olin][ocol]->tile > 35) && (board->m[olin][ocol]->tile < 68))) ) /*tests if it's a friendly tile*/
         return 0;
     else
     {
@@ -1786,7 +1786,7 @@ void print_move_msg (WINDOW *wboard)
     wrefresh  (wboard);
 }
 
-void verify_board_captures (t_board *board)
+void verify_board_captures (t_board *board,int *contDeadW,int *contDeadB)
 {
     t_square *square;
     int i,j;
@@ -1803,6 +1803,7 @@ void verify_board_captures (t_board *board)
                     {
                         unthreat_fire (board,i,j,(square->tile % 4)+1);
                         square->tile = EMPTY;
+                        *contDeadW = *contDeadW + 1;
                     }
                 }
                 else if (square->tile/4 == BFIRE/4)
@@ -1811,6 +1812,7 @@ void verify_board_captures (t_board *board)
                     {
                         unthreat_fire (board,i,j,(square->tile % 4)+1);
                         square->tile = EMPTY;
+                        *contDeadB = *contDeadB + 1;
                     }
                 }
             }
@@ -1823,9 +1825,9 @@ void verify_board_captures (t_board *board)
             if ((j+i >= 6)&&(j+i <= 20) && (j-i <= 7)&&(j-i >= -7)) /*if its on the board*/
             {
                 square = board->m[i][j];
-                if ((square->tile/4 != WFIRE/4)&&(square->tile/4 != BFIRE/4)&&(square->tile != EMPTY)) /*if the square has a tile and it isn't a fire*/
+                if ((square->tile/4 != WFIRE/4)&&(square->tile/4 != BFIRE/4)&&(square->tile != EMPTY)&&(square->tile != BLACKSQR)) /*if the square has a tile and it isn't a fire*/
                 {
-                    if (verify_tile_dies_black (square) || verify_tile_dies_white (square))
+                    if (verify_tile_dies(board,square->tile,i,j,1) || verify_tile_dies(board,square->tile,i,j,0))
                     {
                         int player;
                         if ((square->tile >= 4)&&(square->tile < 36))
@@ -1861,6 +1863,10 @@ void verify_board_captures (t_board *board)
                             unth_and_uncv_water (board,i,j,player);
                         }
                         square->tile = EMPTY;
+                        if (! player)
+                            *contDeadW = *contDeadW + 1;
+                        else
+                            *contDeadB = *contDeadB + 1;
                     }
                 }
             }
@@ -1883,19 +1889,19 @@ void verify_points (t_board *board,int *white_points,int *black_points)
                 square = board->m[i][j];
                 if ((j > 6) && (i < 7) && (j-i <= 7))   /*black home-ground*/
                 {
-                    if ((square->tile >= 4) && (square->tile < 36))
+                    if ((square->tile >= 4) && (square->tile < 36) && (! square->tile/4 == WLOTUS/4))
                         *white_points = *white_points + 2;
                 }
                 else if ((j < 7) && (i > 6) && (i-j <= 7))  /*white home-ground*/
                 {
-                    if ((square->tile >= 36) && (square->tile < 68))
+                    if ((square->tile >= 36) && (square->tile < 68) && (! square->tile/4 == BLOTUS/4))
                         *black_points = *black_points + 2;
                 }
                 else /* middle-ground*/
                 {
-                    if ((square->tile >= 4) && (square->tile < 36))
+                    if ((square->tile >= 4) && (square->tile < 36) && (! square->tile/4 == WLOTUS/4))
                         *white_points = *white_points + 1;
-                    else if ((square->tile >= 36) && (square->tile < 68))
+                    else if ((square->tile >= 36) && (square->tile < 68) && (! square->tile/4 == BLOTUS/4))
                         *black_points = *black_points + 1;
                 }
             }
@@ -2003,6 +2009,71 @@ void print_show_msg (WINDOW *wboard)
     wrefresh(wboard);
 }
 
+int n_buy (int *hvetor,int *rvetor,int n)
+{
+    int tile;
+    int cont = 0;
+    while (cont < n)
+    {
+        scanf("%d",&tile);
+        if ((tile > 0)&&(tile <9))
+        {
+            if (rvetor[tile-1] >= 1)
+            {
+                hvetor[tile-1]++;
+                rvetor[tile-1]--;
+                cont++;
+            }
+        }
+    }
+    return 1;
+}
+
+void print_init (WINDOW *wboard)
+{
+    wclear(wboard);
+    mvwprintw (wboard, 29 , 2  , "1 - Air");
+    mvwprintw (wboard, 30 , 2  , "2 - Bow");   
+    mvwprintw (wboard, 31 , 2  , "3 - Earth");
+    mvwprintw (wboard, 32 , 2  , "4 - Fire");
+    mvwprintw (wboard, 33 , 2  , "5 - Lotus");
+    mvwprintw (wboard, 34 , 2  , "6 - Sai");
+    mvwprintw (wboard, 35 , 2  , "7 - Sword");
+    mvwprintw (wboard, 36 , 2  , "8 - Water");
+    mvwprintw (wboard, 37 , 2  , "To buy a tile, write his number");      
+    mvwprintw (wboard, 38 , 2  , "and press enter.");     
+    mvwprintw (wboard, 39 , 2  , "White buys 7 tiles.");
+    mvwprintw (wboard, 40 , 2  , "Black buys 9 tiles.");
+    mvwprintw (wboard, 41 , 2  , "White buys 1 tile.");
+    wrefresh(wboard);
+}  
+
+void print_turn (WINDOW *wboard,int player)
+{
+    if (! player)
+        mvwprintw (wboard, 5, 54, "White turn.      ");
+    else
+        mvwprintw (wboard, 5, 54, "Black turn.      ");
+    wrefresh(wboard);
+}
+
+void print_msg_buy (WINDOW *wboard,int player)
+{
+    if (! player)   /*white decides the tile that the black buys*/
+    {
+        mvwprintw (wboard, 7, 54, "White, write the");
+        mvwprintw (wboard, 8, 54, "tile that black ");
+        mvwprintw (wboard, 9, 54, "have to buy.    ");
+    }
+    else
+    {
+        mvwprintw (wboard, 7, 54, "Black, write the");
+        mvwprintw (wboard, 8, 54, "tile that white ");
+        mvwprintw (wboard, 9, 54, "have to buy.    ");
+    }
+    wrefresh(wboard);
+} 
+
 int main ()
 {
     initscr();
@@ -2052,6 +2123,8 @@ int main ()
     int player = 0;		/*zero = white, one = black*/
     int white_points = 0;
     int black_points = 0;
+    int contDeadW;
+    int contDeadB;
     int who_win = -1; /*-1 = game doesn't and yet, 0 = white win, 1 = black win, 2 = tie*/
     tiles = (char **) malloc (8*sizeof(char *));
     int i;
@@ -2064,6 +2137,19 @@ int main ()
     initializes_v	  (rv_white,rv_black,3);
     initializes_board (&board);
 
+    print_init (wboard);
+    while (! player)
+    {
+        if (n_buy (hv_white,rv_white,7))
+            player = (player + 1)%2;
+    }
+    while (player)
+    {
+        if (n_buy (hv_black,rv_black,9))
+            player = (player + 1)%2;
+    }
+    n_buy (hv_white,rv_white,1);
+
     while ((who_win == -1)&&(! finish))
     {
         print_board 	  (wboard,&board);
@@ -2071,6 +2157,25 @@ int main ()
         print_vector	  (whand   ,hv_white,hv_black,tiles);
         print_vector	  (wreserve,rv_white,rv_black,tiles);
         print_debug       (wdebug1,wdebug2,&board);
+        print_turn        (wboard,player);
+
+        i = 0;
+        while ( i<contDeadW )
+        {
+            print_msg_buy (wboard,0);
+            if (n_buy (hv_black,rv_black,1))
+                i++;
+        }
+        i = 0;
+        while ( i<contDeadB )
+        {
+            print_msg_buy (wboard,1);
+            if (n_buy (hv_white,rv_white,1))
+                i++;
+        }                                           
+
+        contDeadW = 0;
+        contDeadB = 0;
         k = getch();
         if (k == 'b') 	/*makes buy tiles*/
         {
@@ -2130,12 +2235,13 @@ int main ()
         }
         else if (k == 'q')
             finish = 1;
-        verify_board_captures (&board);
+        verify_board_captures (&board,&contDeadW,&contDeadB);
         verify_points (&board,&white_points,&black_points);
         if (white_points >= 10)
             who_win = 0;
         if (black_points >= 10)
-            who_win = 1;        
+            who_win = 1;       
+
     }
     print_board (wboard,&board);
     if (! finish)
