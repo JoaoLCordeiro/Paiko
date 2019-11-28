@@ -939,199 +939,7 @@ int test_thread (t_board *board,int lin,int col,int player)
         return 0;
 }
 
-int deploy_tile (t_board *board,int player,int *hand)
-{
-    int tile;
-    scanw("%d", &tile);	/*picks the tile that the player want to dpeloy*/
-    if (! tile )		/*type zero and cancel the deploy*/
-        return 0;
-    else if (!(tile > 0)&&(tile < 9))	/*if insn't a vaiable tile*/
-        return 0;
-    else if (hand[tile-1] == 0)	/*if the player doesn't have a tile of this type*/
-        return 0;
-    else
-    {
-        int lin,col;
-        scanw("%d %d", &lin, &col);	/*picks the coordinate to deploy the tile on the board*/
-        lin--;
-        col--;
-        if ((lin==-1) || (col==-1))		/*type zero and cancel the deploy*/
-            return 0;
-        else if (! ((lin < 14)&&(lin >= 0) && (col < 14)&&(col >= 0) && (col+lin >= 6)&&(col+lin <= 20) && (col-lin <= 7)&&(col-lin >= -7)) )	/*tests if it's on the board*/
-            return 0;
-        else if (! (((player)&&((board->m[lin][col]->th_black >= 1)||((lin < 7)&&(col > 6)))) || ((! player)&&((board->m[lin][col]->th_white >= 1)||((lin > 6)&&(col < 7)))))) /*tests if the square has friendly threat or it's on the base*/
-            return 0;
-        else
-        {
-            if (tile == 5)	/*if the player wants to deploy a lotus*/
-            {
-                if ((board->m[lin][col]->tile == EMPTY) || (board->m[lin][col]->tile == BLACKSQR))  /*lotus can be deployed on the black squares*/
-                {
-                    if ( test_thread (board,lin,col,player))   /*testes if the square has threat*/
-                        return 0;
-                    else
-                    {
-                        board->m[lin][col]->tile = 20+32*player;
-                        lotus_covers (board,lin,col,player);
-                        hand[tile-1]--;
-                        return 1;
-                    }
-                }
-                else
-                    return 0;
-            }
-            else if (tile == 4)	/*if the player wants to deploy a fire*/ 
-            {
-                if (board->m[lin][col]->tile == EMPTY)
-                {
-                    if ( test_thread (board,lin,col,player) )  /*test if the square has threat*/
-                        return 0;
-                    else
-                    {
-                        int dir;
-                        scanw("%d", &dir);	/*picks the direction that the player wants to puts the fire*/
-                        if (! dir)          /*if picks zero, cancels the deploy*/
-                            return 0;
-                        else if (! ((dir > 0)&&(dir <5)) )  /*if is a vaiable direction*/
-                            return 0;
-                        else if (! verify_fire (board,lin,col,dir,player))    /*if the fire doesn't kills any piece*/
-                            return 0;
-                        else
-                        {
-                            board->m[lin][col]->tile = 16+32*player+(dir-1);         /*puts fire on de square*/
-                            fire_threatens (board,lin,col,dir);      /*puts the threaten of the fire*/
-                            hand[tile-1]--;
-                            return 1;
-                        }
-                    }
-                }
-                else
-                    return 0;
-            }
-            else
-            {
-                if (board->m[lin][col]->tile == EMPTY)
-                {
-                    if ( test_thread (board,lin,col,player) )  /*testes if the square has threat*/
-                        return 0;
-                    else
-                    {
-                        if ((tile == 2)||(tile == 6))   /*tiles that can rotate*/
-                        {
-                            int dir;
-                            scanw("%d", &dir);
-                            if (!dir)
-                                return 0;
-                            else if (! ((dir > 0)&&(dir < 5)) )
-                                return 0;
-                            else
-                            {
-                                if (tile == 2)  /*if player wants to deploy a bow*/
-                                {
-                                    bow_threatens (board,lin,col,dir,player);
-                                    board->m[lin][col]->tile = 8+32*player+(dir-1);
-                                    hand[tile-1]--;
-                                    return 1;
-                                }
-                                else            /*if player wants to deploy a sai*/
-                                {
-                                    sai_th_and_cv (board,lin,col,dir,player);
-                                    board->m[lin][col]->tile = 24+32*player+(dir-1);
-                                    hand[tile-1]--;
-                                    return 1;
-                                }
-                            }
-                        }
-                        else        /*tiles that cannot rotate*/
-                        {
-                            if (tile == 1)      /*if player wants to deploy a air*/
-                            {
-                                air_threatens (board,lin,col,player);
-                                board->m[lin][col]->tile = 4+32*player;
-                                hand[tile-1]--;
-                                return 1;
-                            }
-                            else if (tile == 3) /*if player wants to deploy a earth*/
-                            {
-                                earth_threatens (board,lin,col,player);
-                                board->m[lin][col]->tile = 12+32*player;
-                                hand[tile-1]--;
-                                return 1;
-                            }
-                            else if (tile == 7) /*if player wants to deploy a sword*/
-                            {
-                                sword_threatens (board,lin,col,player);
-                                board->m[lin][col]->tile = 28+32*player;
-                                hand[tile-1]--;
-                                return 1;
-                            }
-                            else                /*if player wants to deploy a water*/
-                            {
-                                water_th_and_cv (board,lin,col,player);
-                                board->m[lin][col]->tile = 32+32*player;
-                                hand[tile-1]--;
-                                return 1;                                 
-                            }
-                        } 
-                    }
-                }
-                else
-                    return 0;
-            } 
-        }
-    }	
-}
-
-void print_debug (WINDOW *wdebug1,WINDOW *wdebug2,t_board *board)
-{
-    int i,j;
-    wclear (wdebug1);
-    wclear (wdebug2);
-    for (i=0 ; i<7 ; i++)
-    {
-        for (j=0 ; j<14 ; j++)
-        {
-            mvwprintw (wdebug1,1+i*6  ,5+j*3 ,"%d",board->m[i][j]->tile);
-            mvwprintw (wdebug1,1+i*6+1,5+j*3 ,"%d",board->m[i][j]->th_white);
-            mvwprintw (wdebug1,1+i*6+2,5+j*3 ,"%d",board->m[i][j]->th_black);
-            mvwprintw (wdebug1,1+i*6+3,5+j*3 ,"%d",board->m[i][j]->cv_white);
-            mvwprintw (wdebug1,1+i*6+4,5+j*3 ,"%d",board->m[i][j]->cv_black);
-        }
-    }
-    for (i=7 ; i<14 ; i++)                                                       
-    {
-        for (j=0 ; j<14 ; j++)
-        {
-            mvwprintw (wdebug2,1+(i-7)*6  ,5+j*3 ,"%d",board->m[i][j]->tile);
-            mvwprintw (wdebug2,1+(i-7)*6+1,5+j*3 ,"%d",board->m[i][j]->th_white);
-            mvwprintw (wdebug2,1+(i-7)*6+2,5+j*3 ,"%d",board->m[i][j]->th_black);
-            mvwprintw (wdebug2,1+(i-7)*6+3,5+j*3 ,"%d",board->m[i][j]->cv_white);
-            mvwprintw (wdebug2,1+(i-7)*6+4,5+j*3 ,"%d",board->m[i][j]->cv_black);
-        }
-    }                                                                                                                                            
-    box (wdebug1,0,0);
-    box (wdebug2,0,0);
-    wrefresh(wdebug1);
-    wrefresh(wdebug2);
-}
-
-void print_deploy_msg (WINDOW *wboard)
-{
-    mvwprintw (wboard, 37 , 2  , "Write the number of");            
-    mvwprintw (wboard, 38 , 2  , "the tile that you want");         
-    mvwprintw (wboard, 39 , 2  , "to deploy, the position");
-    mvwprintw (wboard, 40 , 2  , "on the board and, if the tile");
-    mvwprintw (wboard, 41 , 2  , "can rotate, his rotation.");
-    mvwprintw (wboard, 42 , 2  , "Type 0 to cancel the action.");
-    mvwprintw (wboard, 37 , 47 , "For the directions:");            
-    mvwprintw (wboard, 38 , 47 , "1 - Up");       
-    mvwprintw (wboard, 39 , 47 , "2 - Left");
-    mvwprintw (wboard, 40 , 47 , "3 - Right");
-    mvwprintw (wboard, 41 , 47 , "4 - Down");
-    wrefresh  (wboard);
-}
-
-int verify_tile_dies (t_board *board,int tile,int lin,int col,int player)
+int verify_tile_dies (t_board *board,int tile,int lin,int col,int player)                                                                                                                                                               
 {
     if (! player)
     {
@@ -1230,6 +1038,235 @@ int verify_way_to_square (t_board *board,int olin,int ocol,int dlin,int dcol)
         return 1;
     }
     return 0;
+}
+ 
+int move_sai (t_board *board,int player,int olin,int ocol,int dir)                                                                                                                                      
+{
+    int dlin,dcol;
+    scanw ("%d %d",&dlin,&dcol);
+    dlin--;
+    dcol--;
+    if ((dlin == -1)&&(dcol == -1))     /*cancel action*/
+        return 0;
+    else if (! ((dlin < 14)&&(dlin >= 0) && (dcol < 14)&&(dcol >= 0) && (dcol+dlin >= 6)&&(dcol+dlin <= 20) && (dcol-dlin <= 7)&&(dcol-dlin >= -7)) )   /*if its on the board*/
+        return 0;
+    else if (! (board->m[dlin][dcol]->tile == 0))       /*if the square is occupied*/
+        return 0;
+    else if (! ( verify_square_region (board->m[olin][ocol]->tile,olin,ocol,dlin,dcol) || ((olin == dlin)&&(ocol == dcol)) ) )  /*if the destiny square its on the region of the original square*/
+        return 0;
+    else if ( verify_tile_dies (board,board->m[olin][ocol]->tile,dlin,dcol,player))  /*if the tile dies in the destiny square*/
+        return 0;
+    else if (! verify_way_to_square (board,olin,ocol,dlin,dcol) )       /*if there is a way to go to the square*/
+        return 0;
+    else
+    {
+        if (! dir)                          
+            return 0;
+        else if (! ((dir > 0)&&(dir < 5)))
+            return 0;
+        else
+        {
+            board->m[olin][ocol]->tile = 0;                                 
+            board->m[dlin][dcol]->tile = 24+32*player+(dir-1);
+            sai_th_and_cv (board,dlin,dcol,dir,player);
+            return 1;
+        }
+    }
+}
+ 
+int deploy_tile (t_board *board,int player,int *hand)
+{
+    int tile;
+    scanw("%d", &tile);	/*picks the tile that the player want to dpeloy*/
+    if (! tile )		/*type zero and cancel the deploy*/
+        return 0;
+    else if (!(tile > 0)&&(tile < 9))	/*if insn't a vaiable tile*/
+        return 0;
+    else if (hand[tile-1] == 0)	/*if the player doesn't have a tile of this type*/
+        return 0;
+    else
+    {
+        int lin,col;
+        scanw("%d %d", &lin, &col);	/*picks the coordinate to deploy the tile on the board*/
+        lin--;
+        col--;
+        if ((lin==-1) || (col==-1))		/*type zero and cancel the deploy*/
+            return 0;
+        else if (! ((lin < 14)&&(lin >= 0) && (col < 14)&&(col >= 0) && (col+lin >= 6)&&(col+lin <= 20) && (col-lin <= 7)&&(col-lin >= -7)) )	/*tests if it's on the board*/
+            return 0;
+        else if (! (((player)&&((board->m[lin][col]->th_black >= 1)||((lin < 7)&&(col > 6)))) || ((! player)&&((board->m[lin][col]->th_white >= 1)||((lin > 6)&&(col < 7)))))) /*tests if the square has friendly threat or it's on the base*/
+            return 0;
+        else
+        {
+            if (tile == 5)	/*if the player wants to deploy a lotus*/
+            {
+                if ((board->m[lin][col]->tile == EMPTY) || (board->m[lin][col]->tile == BLACKSQR))  /*lotus can be deployed on the black squares*/
+                {
+                    if ( test_thread (board,lin,col,player))   /*testes if the square has threat*/
+                        return 0;
+                    else
+                    {
+                        board->m[lin][col]->tile = 20+32*player;
+                        lotus_covers (board,lin,col,player);
+                        hand[tile-1]--;
+                        return 1;
+                    }
+                }
+                else
+                    return 0;
+            }
+            else if (tile == 4)	/*if the player wants to deploy a fire*/ 
+            {
+                if (board->m[lin][col]->tile == EMPTY)
+                {
+                    if ( test_thread (board,lin,col,player) )  /*test if the square has threat*/
+                        return 0;
+                    else
+                    {
+                        int dir;
+                        scanw("%d", &dir);	/*picks the direction that the player wants to puts the fire*/
+                        if (! dir)          /*if picks zero, cancels the deploy*/
+                            return 0;
+                        else if (! ((dir > 0)&&(dir <5)) )  /*if is a vaiable direction*/
+                            return 0;
+                        else if (! verify_fire (board,lin,col,dir,player))    /*if the fire doesn't kills any piece*/
+                            return 0;
+                        else
+                        {
+                            board->m[lin][col]->tile = 16+32*player+(dir-1);         /*puts fire on de square*/
+                            fire_threatens (board,lin,col,dir);      /*puts the threaten of the fire*/
+                            hand[tile-1]--;
+                            return 1;
+                        }
+                    }
+                }
+                else
+                    return 0;
+            }
+            else
+            {
+                if (board->m[lin][col]->tile == EMPTY)
+                {
+                    if ( test_thread (board,lin,col,player) )  /*testes if the square has threat*/
+                        return 0;
+                    else
+                    {
+                        if ((tile == 2)||(tile == 6))   /*tiles that can rotate*/
+                        {
+                            int dir;
+                            scanw("%d", &dir);
+                            if (!dir)
+                                return 0;
+                            else if (! ((dir > 0)&&(dir < 5)) )
+                                return 0;
+                            else
+                            {
+                                if (tile == 2)  /*if player wants to deploy a bow*/
+                                {
+                                    bow_threatens (board,lin,col,dir,player);
+                                    board->m[lin][col]->tile = 8+32*player+(dir-1);
+                                    hand[tile-1]--;
+                                    return 1;
+                                }
+                                else            /*if player wants to deploy a sai*/
+                                {
+                                    int move = move_sai (board,player,lin,col,dir);
+                                    while (! move )
+                                    {
+                                        move = move_sai (board,player,lin,col,dir);
+                                    }
+                                    hand[tile-1]--;
+                                    return 1;
+                                }
+                            }
+                        }
+                        else        /*tiles that cannot rotate*/
+                        {
+                            if (tile == 1)      /*if player wants to deploy a air*/
+                            {
+                                air_threatens (board,lin,col,player);
+                                board->m[lin][col]->tile = 4+32*player;
+                                hand[tile-1]--;
+                                return 1;
+                            }
+                            else if (tile == 3) /*if player wants to deploy a earth*/
+                            {
+                                earth_threatens (board,lin,col,player);
+                                board->m[lin][col]->tile = 12+32*player;
+                                hand[tile-1]--;
+                                return 1;
+                            }
+                            else if (tile == 7) /*if player wants to deploy a sword*/
+                            {
+                                sword_threatens (board,lin,col,player);
+                                board->m[lin][col]->tile = 28+32*player;
+                                hand[tile-1]--;
+                                return 1;
+                            }
+                            else                /*if player wants to deploy a water*/
+                            {
+                                water_th_and_cv (board,lin,col,player);
+                                board->m[lin][col]->tile = 32+32*player;
+                                hand[tile-1]--;
+                                return 1;                                 
+                            }
+                        } 
+                    }
+                }
+                else
+                    return 0;
+            } 
+        }
+    }	
+}
+
+void print_debug (WINDOW *wdebug1,WINDOW *wdebug2,t_board *board)
+{
+    int i,j;
+    wclear (wdebug1);
+    wclear (wdebug2);
+    for (i=0 ; i<7 ; i++)
+    {
+        for (j=0 ; j<14 ; j++)
+        {
+            mvwprintw (wdebug1,1+i*6  ,5+j*3 ,"%d",board->m[i][j]->tile);
+            mvwprintw (wdebug1,1+i*6+1,5+j*3 ,"%d",board->m[i][j]->th_white);
+            mvwprintw (wdebug1,1+i*6+2,5+j*3 ,"%d",board->m[i][j]->th_black);
+            mvwprintw (wdebug1,1+i*6+3,5+j*3 ,"%d",board->m[i][j]->cv_white);
+            mvwprintw (wdebug1,1+i*6+4,5+j*3 ,"%d",board->m[i][j]->cv_black);
+        }
+    }
+    for (i=7 ; i<14 ; i++)                                                       
+    {
+        for (j=0 ; j<14 ; j++)
+        {
+            mvwprintw (wdebug2,1+(i-7)*6  ,5+j*3 ,"%d",board->m[i][j]->tile);
+            mvwprintw (wdebug2,1+(i-7)*6+1,5+j*3 ,"%d",board->m[i][j]->th_white);
+            mvwprintw (wdebug2,1+(i-7)*6+2,5+j*3 ,"%d",board->m[i][j]->th_black);
+            mvwprintw (wdebug2,1+(i-7)*6+3,5+j*3 ,"%d",board->m[i][j]->cv_white);
+            mvwprintw (wdebug2,1+(i-7)*6+4,5+j*3 ,"%d",board->m[i][j]->cv_black);
+        }
+    }                                                                                                                                            
+    box (wdebug1,0,0);
+    box (wdebug2,0,0);
+    wrefresh(wdebug1);
+    wrefresh(wdebug2);
+}
+
+void print_deploy_msg (WINDOW *wboard)
+{
+    mvwprintw (wboard, 37 , 2  , "Write the number of");            
+    mvwprintw (wboard, 38 , 2  , "the tile that you want");         
+    mvwprintw (wboard, 39 , 2  , "to deploy, the position");
+    mvwprintw (wboard, 40 , 2  , "on the board and, if the tile");
+    mvwprintw (wboard, 41 , 2  , "can rotate, his rotation.");
+    mvwprintw (wboard, 42 , 2  , "Type 0 to cancel the action.");
+    mvwprintw (wboard, 37 , 47 , "For the directions:");            
+    mvwprintw (wboard, 38 , 47 , "1 - Up");       
+    mvwprintw (wboard, 39 , 47 , "2 - Left");
+    mvwprintw (wboard, 40 , 47 , "3 - Right");
+    mvwprintw (wboard, 41 , 47 , "4 - Down");
+    wrefresh  (wboard);
 }
 
 void unthreat_bow (t_board *board,int lin,int col,int dir,int player)
@@ -1696,7 +1733,7 @@ int move_tile   (t_board *board,int player)
             {
                 int dir;
                 scanw("%d",&dir);
-                if (! dir)
+                if (! dir)                          
                     return 0;
                 else if (! ((dir > 0)&&(dir < 5)))
                     return 0;
@@ -1731,7 +1768,7 @@ int move_tile   (t_board *board,int player)
                         else    /*if its a sai*/
                         {
                             unth_and_uncv_sai (board,olin,ocol,(tile%4)+1,player);
-                            board->m[olin][ocol]->tile = 0;
+                            board->m[olin][ocol]->tile = 0;                     
                             board->m[dlin][dcol]->tile = 24+32*player+(dir-1);
                             sai_th_and_cv (board,dlin,dcol,dir,player);
                             return 1;
@@ -1827,13 +1864,13 @@ void verify_board_captures (t_board *board,int *contDeadW,int *contDeadB)
                 square = board->m[i][j];
                 if ((square->tile/4 != WFIRE/4)&&(square->tile/4 != BFIRE/4)&&(square->tile != EMPTY)&&(square->tile != BLACKSQR)) /*if the square has a tile and it isn't a fire*/
                 {
-                    if (verify_tile_dies(board,square->tile,i,j,1) || verify_tile_dies(board,square->tile,i,j,0))
+                    int player;                                  
+                    if ((square->tile >= 4)&&(square->tile < 36))
+                        player = 0;
+                    else
+                        player = 1;
+                    if (verify_tile_dies(board,square->tile,i,j,player))
                     {
-                        int player;
-                        if ((square->tile >= 4)&&(square->tile < 36))
-                            player = 0;
-                        else
-                            player = 1;
                         if ((square->tile/4 == WAIR/4)||(square->tile/4 == BAIR/4))             /*if its a air*/
                         {
                             unthreat_air (board,i,j,player);
@@ -1948,20 +1985,23 @@ void print_board_cv (WINDOW *wboard,t_board *board,int player)
     {
         for (j=0 ; j<14 ; j++)
         {
-            if (((board->m[i][j]->cv_white >= 1)&&(! player)) || ((board->m[i][j]->cv_black >= 1)&&(player)))
+            if (! (board->m[i][j]->tile == -1))
             {
-                mvwaddch (wboard, 1+i*3, 1+j*5, ACS_ULCORNER);
-                mvwaddch (wboard, 1+i*3, 5+j*5, ACS_URCORNER);
-                mvwaddch (wboard, 3+i*3, 1+j*5, ACS_LLCORNER);
-                mvwaddch (wboard, 3+i*3, 5+j*5, ACS_LRCORNER);
-                mvwaddch (wboard, 1+i*3, 2+j*5, ACS_HLINE);
-                mvwaddch (wboard, 1+i*3, 3+j*5, ACS_HLINE);
-                mvwaddch (wboard, 1+i*3, 4+j*5, ACS_HLINE);
-                mvwaddch (wboard, 3+i*3, 2+j*5, ACS_HLINE);
-                mvwaddch (wboard, 3+i*3, 3+j*5, ACS_HLINE);
-                mvwaddch (wboard, 3+i*3, 4+j*5, ACS_HLINE);
-                mvwaddch (wboard, 2+i*3, 1+j*5, ACS_VLINE);
-                mvwaddch (wboard, 2+i*3, 5+j*5, ACS_VLINE);
+                if (((board->m[i][j]->cv_white >= 1)&&(! player)) || ((board->m[i][j]->cv_black >= 1)&&(player)))
+                {
+                    mvwaddch (wboard, 1+i*3, 1+j*5, ACS_ULCORNER);
+                    mvwaddch (wboard, 1+i*3, 5+j*5, ACS_URCORNER);
+                    mvwaddch (wboard, 3+i*3, 1+j*5, ACS_LLCORNER);
+                    mvwaddch (wboard, 3+i*3, 5+j*5, ACS_LRCORNER);
+                    mvwaddch (wboard, 1+i*3, 2+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 1+i*3, 3+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 1+i*3, 4+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 3+i*3, 2+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 3+i*3, 3+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 3+i*3, 4+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 2+i*3, 1+j*5, ACS_VLINE);
+                    mvwaddch (wboard, 2+i*3, 5+j*5, ACS_VLINE);
+                }
             }
         }
     }
@@ -1977,20 +2017,23 @@ void print_board_th (WINDOW *wboard,t_board *board,int player)
     {
         for (j=0 ; j<14 ; j++)
         {
-            if (((board->m[i][j]->th_white >= 1)&&(! player)) || ((board->m[i][j]->th_black >= 1)&&(player)))
-            {
-                mvwaddch (wboard, 1+i*3, 1+j*5, ACS_ULCORNER);
-                mvwaddch (wboard, 1+i*3, 5+j*5, ACS_URCORNER);
-                mvwaddch (wboard, 3+i*3, 1+j*5, ACS_LLCORNER);
-                mvwaddch (wboard, 3+i*3, 5+j*5, ACS_LRCORNER);
-                mvwaddch (wboard, 1+i*3, 2+j*5, ACS_HLINE);
-                mvwaddch (wboard, 1+i*3, 3+j*5, ACS_HLINE);
-                mvwaddch (wboard, 1+i*3, 4+j*5, ACS_HLINE);
-                mvwaddch (wboard, 3+i*3, 2+j*5, ACS_HLINE);
-                mvwaddch (wboard, 3+i*3, 3+j*5, ACS_HLINE);
-                mvwaddch (wboard, 3+i*3, 4+j*5, ACS_HLINE);
-                mvwaddch (wboard, 2+i*3, 1+j*5, ACS_VLINE);
-                mvwaddch (wboard, 2+i*3, 5+j*5, ACS_VLINE);
+            if (! (board->m[i][j]->tile == -1))
+            { 
+                if (((board->m[i][j]->th_white >= 1)&&(! player)) || ((board->m[i][j]->th_black >= 1)&&(player)))
+                {
+                    mvwaddch (wboard, 1+i*3, 1+j*5, ACS_ULCORNER);
+                    mvwaddch (wboard, 1+i*3, 5+j*5, ACS_URCORNER);
+                    mvwaddch (wboard, 3+i*3, 1+j*5, ACS_LLCORNER);
+                    mvwaddch (wboard, 3+i*3, 5+j*5, ACS_LRCORNER);
+                    mvwaddch (wboard, 1+i*3, 2+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 1+i*3, 3+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 1+i*3, 4+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 3+i*3, 2+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 3+i*3, 3+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 3+i*3, 4+j*5, ACS_HLINE);
+                    mvwaddch (wboard, 2+i*3, 1+j*5, ACS_VLINE);
+                    mvwaddch (wboard, 2+i*3, 5+j*5, ACS_VLINE);
+                }
             }
         }
     }
@@ -2015,7 +2058,7 @@ int n_buy (int *hvetor,int *rvetor,int n)
     int cont = 0;
     while (cont < n)
     {
-        scanf("%d",&tile);
+        scanw("%d",&tile);
         if ((tile > 0)&&(tile <9))
         {
             if (rvetor[tile-1] >= 1)
@@ -2071,6 +2114,11 @@ void print_msg_buy (WINDOW *wboard,int player)
         mvwprintw (wboard, 8, 54, "tile that white ");
         mvwprintw (wboard, 9, 54, "have to buy.    ");
     }
+    mvwprintw (wboard, 1, 2, "                        ");
+    mvwprintw (wboard, 2, 2, "                        ");
+    mvwprintw (wboard, 3, 2, "                        ");
+    mvwprintw (wboard, 4, 2, "                        ");
+    mvwprintw (wboard, 5, 2, "                        ");
     wrefresh(wboard);
 } 
 
